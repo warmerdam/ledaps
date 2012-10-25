@@ -1,0 +1,10 @@
+	LEDAPS Refactoring
+	==================
+
+In order to be able to run LEDAPS on a scene more quickly, I 
+(Frank Warmerdam) and investigating ways to refactor the code
+to operate on scene chunks.  
+
+This git repository is an effort to track changes related to 
+this refactoring in a way that they might actually be accepted
+back upstream by the original maintainers of LEDAPS. 
