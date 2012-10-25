@@ -8,3 +8,19 @@ to operate on scene chunks.
 This git repository is an effort to track changes related to 
 this refactoring in a way that they might actually be accepted
 back upstream by the original maintainers of LEDAPS. 
+
+
+Binaries
+--------
+
+In addition to the source code on github, it is also helpful to 
+fetch and unpack the 32bit linux binaries, and support libraries. 
+Fetch from:
+
+  https://docs.google.com/open?id=0B7oSeenV3QpzZlRIRDdnS255clU
+
+This should give a ledaps-20120925-bin.tar.gz file that should
+be unpacked in the repository root (ie. just above the "src" 
+directory). It will create the bin, src/lib and src/include 
+directories.
+
