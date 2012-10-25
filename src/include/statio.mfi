@@ -1,0 +1,7 @@
+/* This include file generates the correct FORTRAN syntax for including
+   the statio parameters. */
+#ifdef vms
+	include 'lasinclude:statio.fin'
+#else
+	include '$LASINCLUDE/statio.fin'
+#endif

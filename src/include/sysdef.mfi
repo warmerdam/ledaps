@@ -1,0 +1,7 @@
+/* This include file generates the correct FORTRAN syntax for including
+   the sysdef parameters. */
+#ifdef vms
+	include 'lasinclude:sysdef.fin'
+#else
+	include '$LASINCLUDE/sysdef.fin'
+#endif

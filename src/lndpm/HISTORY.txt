@@ -1,0 +1,61 @@
+Revision:
+
+revision 1.5.8  08/17/2012 Gail Schmidt, USGS EROS
+- updated the metadata tags to work with the newly released LPGS metadata as well as continuing to support the old metadata tags
+- cleaned up warning messages from compilation
+
+revision 1.5.7.5  1/18/2012 
+- restores the solar zenith angle bug fix from the past for NLAP_W0 format (Greg Ederer)
+- fixes a bug when writing the UTM zone (south) into the ENVI hdr file (Greg Ederer)
+- added processing for Landsat-4 TM (Feng Gao)
+
+revision 1.5.7  10/22/2010 Feng Gao
+- included global DEM file for lndsr processing
+- used actual LMIN, LMAX, QCALMIN and QCALMAX values for ETM+ calibration if provided in LPGS metadata, otherwise still use gain_settings (HIGH or LOW)
+- cleaned compiling warning messages
+
+revision 1.5.6  9/29/2009 Greg Ederer
+- replaced hard coded version strings with macros that can be overridden at compile time. 
+  The build script can substitute current version info automatically.
+
+revision 1.5.5  9/28/2009 Greg Ederer and Feng Gao 
+- replaced fixed ancillary data path with path searched from ANC_PATH 
+
+revision 1.5.4  6/22/2009 Feng Gao
+- fixed a bug in computing bais from (lmin, lmax) and (qmin, qmax)  
+
+revision 1.5.3  4/7/2009 Feng Gao
+- read GTRasterTypeGeoKey from GeoTiff file and determine the coordinate for the UL of the UL pixel
+  (note that both LPGS and NLAPS use CENTER of pixel in the provided text metadata)
+  However, in GeoTiff file, LPGS  uses center (RasterPixelIsArea) 
+                            NLAPS uses upper left (RasterPixelIsPoint)
+
+revision 1.5.2  4/2/2009 Feng Gao
+- added option on re-calibration for public version
+  in "lndcal*.txt" added:   RE_CAL = "NO" or RE_CAL = "FALSE"
+  (default: do re-calibration as internal ledaps does)
+- included ENVI header for each HDF file so ENVI can load correct geo-reference information
+
+revision 1.5.1 3/19/2009 Feng Gao
+- corrected LMIN, LMAX conversion to gain and bias using actual QCALMIN and QCALMAX in the meta file 
+- used actual gain and bias values for TM to match recent changes in "lndcal"
+
+revision 1.5  12/16/2008 Feng Gao
+- added processing for LPGS TM data (newly EROS released TM and ETM+)    
+
+revision 1.4  8/28/2007  Feng Gao
+- added processing for MSS data
+
+revision 1.3  6/22/2007  Feng Gao
+- now accept LC-ComPS "standard" metadata from UMD (file name must in *.umd)
+
+revision 1.2  10/21/2006 Feng Gao
+- read upper left coordinate from image file if it is a GeoTiff input
+  note that metadata in GeoCover data are not updated on UL coordinate
+
+revision 1.1  2/24/2006  Feng Gao
+- revise to accept metadata from both NLAPS and LPGS Landsat processing system  
+- add error handling 
+- add log report
+
+original version - 04/05 by Feng Gao

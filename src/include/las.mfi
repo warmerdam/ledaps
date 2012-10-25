@@ -1,0 +1,60 @@
+#ifdef gould
+	implicit undefined (a-z)
+	include '$LASINCLUDE/worgen.fin'
+	include '$LASINCLUDE/display.fin'
+	include '$LASINCLUDE/ddr.fin'
+	include '$LASINCLUDE/imageiog.fin'
+	include '$TAEINC/PGMINC.FIN'
+#endif
+
+#ifdef ibm
+	implicit undefined (a-z)
+	include '$LASINCLUDE/worgen.fin'
+	include '$LASINCLUDE/display.fin'    
+	include '$LASINCLUDE/ddr.fin'
+	include '$LASINCLUDE/imageioi.fin'
+	include '$TAEINC/PGMINC.FIN'
+#endif
+
+#ifdef sun
+	implicit none
+	include '$LASINCLUDE/worgen.fin'
+	include '$LASINCLUDE/display.fin'    
+	include '$LASINCLUDE/ddr.fin'
+	include '$LASINCLUDE/imageios.fin'
+	include '$TAEINC/pgminc.fin'
+#endif
+
+#ifdef vms
+	implicit none
+	include 'lasinclude:worgen.fin'
+	include 'lasinclude:display.fin'
+	include 'lasinclude:ddr.fin'
+	include 'lasinclude:imageiov.fin'
+	include 'tae$inc:pgminc.fin'
+#endif
+
+#ifdef sgi
+	implicit none
+	include '$LASINCLUDE/worgen.fin'
+	include '$LASINCLUDE/display.fin'    
+	include '$LASINCLUDE/ddr.fin'
+	include '$LASINCLUDE/imageiosg.fin'
+	include '$TAEINC/pgminc.fin'
+#endif
+#ifdef DGUX
+	implicit undefined (a-z)
+	include '$LASINCLUDE/worgen.fin'
+	include '$LASINCLUDE/display.fin'    
+	include '$LASINCLUDE/ddr.fin'
+	include '$LASINCLUDE/imageiodg.fin'
+	include '$TAEINC/pgminc.fin'
+#endif
+#ifdef linux
+        implicit none
+        include '$LASINCLUDE/worgen.fin'
+        include '$LASINCLUDE/display.fin'
+        include '$LASINCLUDE/ddr.fin'
+        include '$LASINCLUDE/imageiosg.fin'
+        include '$TAEINC/pgminc.fin'
+#endif

@@ -1,0 +1,293 @@
+User Reference on the LEDAPS Land Surface Reflectance Modules
+
+1. Overall Description
+
+Landsat Ecosystem Disturbance Adaptive Processing System (LEDAPS) processes Landsat 
+data from L1B to surface reflectance using atmospheric correction routines similar to 
+that developed for the MODIS instrument. This package includes three basic modules 
+(plus a parameter parser and an internal cloud detection program) to convert Landsat 
+data from digital numbers (DN) to surface reflectance. The three steps include:
+
+a). Calibrate digital number (DN) to top-of-atmosphere (TOA) reflectance
+b). Detect cloud pixels based on the TOA reflectance
+c). Correct to surface reflectance from TOA reflectance and ancillary data sets
+
+Please check Ledaps web site for more detailed information:
+http://ledaps.nascom.nasa.gov/
+
+Reference:
+Masek, J. G., E. F. Vermote, N. E. Saleous, R. Wolfe, F. G. Hall, F. Huemmrich, 
+F. Gao, J. Kutler, and T. K., Lim, A Landsat surface reflectance data set for 
+North America, 1990-2000, IEEE Geoscience and Remote Sensing Letters, 
+Vol. 3, No.1, pp. 69-72, 2006.
+
+
+2. Module Description
+
+2.1. Build Input Parameter Files
+
+NAME 
+
+      	lndpm: parse parameters of Landsat metadata file for uses in surface reflectance 
+	       process 
+
+USAGE
+
+	lndpm [Landsat_L1G_metadata_file] 
+
+INPUTS
+
+	Landsat L1G metadata file file produced by 
+	LPGS system (in *_MTL.txt or *.met) or NLAPS system (in *.H1 or *.hdr)
+ 
+OUTPUTS
+
+        * Metadata file (*.carbon_met.txt)
+	* Calibration input (lndcal.*.txt)
+	* Cloud detection input (lndcsm.*.txt)
+	* Surface reflectance input (lndsr.*.txt)
+	* Log Report file (logReport)
+	* ENVI header files for each HDF outputs with geo-reference
+
+EXAMPLE
+
+	Enter directory with Landsat data (p33r33 on 7/2/2002 for example) and run 	
+           lndpm L71033033_03320020702_MTL.txt
+	It will create following outputs for surface reflectance processes
+	   L71033033_03320020702_MTL.carbon_met.txt
+	   lndcal.L71033033_03320020702_MTL.txt
+	   lndcsm.L71033033_03320020702_MTL.txt
+	   lndsr.L71033033_03320020702_MTL.txt
+	   logReport
+	   *.hdf.hdr
+      
+NOTES 
+
+	* This program was tested on the limited metadata formats created by LPGS or NLAPS 	
+	systems for both Landsat TM and ETM+ data from the USGS EDC or GeoCover. It may 	
+	not work on other data formats or the varieties of LPGS and NLAPS. Program recognize 	
+	data source by checking file type. Metadata file with extension of "*_MTL.txt" or "*.met" 	
+	is thought to be from LPGS system. Metadata file with extension of "*.H1" or "*.hdr" is 	
+	though to be from NLAPS system. 
+
+	* Some parameters, such as projection number and band filenames, may be missing from 	
+	Landsat metadata. Users will need to add them to "*.carbon_met.txt" file manually.
+
+	* The matching parameters from metadata file will be appended to the end of logReport	
+	file for user's record 
+
+
+
+2.2. Calibration 
+
+
+NAME 
+
+      	lndcal: Calibrate Landsat data from digital number (DN) to top-of-atmosphere (TOA) 		
+		reflectance  
+
+USAGE
+
+	lndcal [lndcal_input_file]
+
+INPUTS
+
+	Landsat metadata file defined in the calibration input parameter file (created by lndpm)
+
+OUTPUTS
+
+	* calibrated TOA reflectance file in HDF format
+	* thermal band brightness temperature file in HDF format
+	(both of them are also defined in the calibration input parameter file)
+
+EXAMPLE
+
+	A sample input file 
+	> more lndcal.L71033033_03320020702.txt
+	PARAMETER_FILE
+	HEADER_FILE = L71033033_03320020702.carbon_met.txt
+	REF_FILE = lndcal.L71033033_03320020702.hdf
+	THERM_FILE = lndth.L71033033_03320020702.hdf
+	PGEVersion = 1.0.9
+	ProcessVersion = 1.0.6
+	DNOUT = "FALSE"
+	END
+
+and a sample metadata file 	
+> more L71033033_03320020702.carbon_met.txt
+HEADER_FILE
+FILE_TYPE = GEOTIFF
+DATA_PROVIDER = UMD
+SATTELITE = LANDSAT_7
+INSTRUMENT = ETM
+ACQUISITION_DATE = 2002-07-02
+PRODUCTION_DATE = 2006-01-26
+SOLAR_ZENITH = 25.914314
+SOLAR_AziMUTH = 120.2057951
+WRS_SYSTEM = 2
+WRS_PATH = 033
+WRS_ROW = 033
+NBAND = 6
+BANDS = 1, 2, 3, 4, 5, 7
+GAIN_SETTINGS = LOW, LOW, LOW, LOW, LOW, LOW
+NSAMPLE = 7912
+NLINE = 7493
+FILE_NAMES = L71033033_03320020702_B10.tif, L71033033_03320020702_B20.tif, L71033033_03320020702_B30.tif, L710
+33033_03320020702_B40.tif, L71033033_03320020702_B50.tif, L72033033_03320020702_B70.tif
+NBAND_TH = 1
+BANDS_TH = 6
+GAIN_SETTINGS_TH = LOW
+NSAMPLE_TH = 3956
+NLINE_TH = 3746
+FILE_NAMES_TH = L71033033_03320020702_B61.tif
+PROJECTION_NUMBER = 1
+PIXEL_SIZE = 28.500
+UPPER_LEFT_CORNER = 409488.000, 4412085.000
+PROJECTION_ZONE = 013
+PROJECTION_SPHERE = 12
+END
+
+	run command line below to get TOA reflectance
+	> lndcal lndcal.L71033033_03320020702.txt 
+
+NOTES 
+
+	* For Landsat ETM+ data, GAIN_SETTINGS in "*.carbon_met" metadata will use "LOW" 	
+	or "HIGH". For Landsat TM data, GAIN and BIAS values will be extracted metadata file. 	
+	Calibration for Landsat TM data may need first to be "un-calibrated" with the old 	
+	calibration coefficients and then apply the new ones depending on the Landsat TM 	
+	processing system and processing date. This process is embedded in the calibration module 	
+	and not visible to end users.   
+
+
+2.3. Cloud Detection 
+
+
+NAME 
+
+      	lndcsm: produce cloud mask after lndcal process
+
+USAGE
+	lndcsm [lndcsm_input_file]
+
+INPUTS
+	* Landsat calibrated TOA reflectance
+	* Landsat thermal band brightness temprature	
+	
+OUTPUTS
+	* Landsat cloud mask file
+
+EXAMPLE
+	
+	A sample input file
+      > more lndcsm.L71033033_03320020702.txt
+      PARAMETER_FILE
+      CSM_FILE = lndcsm.L71033033_03320020702.hdf
+      REF_FILE = lndcal.L71033033_03320020702.hdf
+      THERM_FILE = lndth.L71033033_03320020702.hdf
+      PGEVersion = 1.0.9
+      ProcessVersion = 1.0.4
+      END
+      
+      run command line below to get cloud mask file
+      > lndcsm lndcsm.L71033033_03320020702.txt 
+
+NOTES 
+
+	* Two cloud masks are produced. One uses ACCA algorithm. Another uses MODIS similar 	
+	approach developed by Nazmi. 
+	
+
+2.4. Atmosphere Correction 
+
+
+NAME 
+
+      	lndsr: perform atmosphere correction on TOA reflectance and produce surface reflectance 
+
+USAGE
+
+	lndsr [lndsr_input_file]
+
+INPUTS
+
+	* TOA spectral bands reflectance
+	* TOA thermal band brightness temperature
+	* cloud mask file produced by lndcsm
+	* NASA's EP/TOMS ozone data 
+	* NOAA NCEP's reanalysis data (pressure, water, air temperature)
+	
+OUTPUTS
+
+	* surface reflectance along with the bit-packed quality flags
+
+EXAMPLE
+      
+      A sample input file
+      > more lndsr.L71033033_03320020702.txt 
+      PARAMETER_FILE
+      OZON_FIL = /data/Landsat/anc/EP_TOMS/ozone_2002/TOMS_2002183.hdf
+      PRWV_FIL = /data/Landsat/anc/REANALYSIS/RE_2002/REANALYSIS_2002183.hdf
+      CSM_FILE = lndcsm.L71033033_03320020702.hdf
+      REF_FILE = lndcal.L71033033_03320020702.hdf
+      TEMP_FILE = lndth.L71033033_03320020702.hdf
+      SR_FILE = lndsr.L71033033_03320020702.hdf
+      PGEVersion = 1.0.9
+      ProcessVersion = 1.0.4
+      END
+      
+      run command line below to get surface reflectance
+      > lndsr lndsr.L71033033_03320020702.txt
+      
+NOTES 
+
+	* The daily ancillary ozone data and reanalysis water vapor, surface pressure and air 	
+	temperature should match acquisition date of Landsat imagery. 
+
+	* The ancillary data were downloaded from EP/TOMS and REANALYSIS data center and 	
+	then reorganized into specific HDF format.
+
+	* EP/TOMS ozone data and NCEP REANALYSIS data are available from 1980 to 2007. 
+	They are sorted by years and saved in different sub-directory. 
+
+	* Surface reflectance bit packed QA flags are
+	  0     unused
+	  1     valid data (0=yes, 1=no)
+	  2     ACCA cloud bit (1=cloudy, 0=clear)
+	  3     unused
+	  4     ACCA snow mask
+	  5     land mask based on DEM (1=land, 0=water)
+	  6     DDV
+	  7-15  unused
+
+ 
+
+2.5. Internal Cloud Mask 
+
+
+NAME 
+
+      	lndsrbm.ksh: perform surface reflectance based cloud mask (srbm)detection and produce additional cloud mask bits (8-15) for surface reflectance file 
+
+USAGE
+
+	lndsrbm.ksh [lndsr_input_file]
+
+	
+OUTPUTS (new cloud mask bits) 
+	Surface reflectance bit packed QA flags are
+	  0     unused
+	  1     valid data (0=yes, 1=no)
+	  2     ACCA cloud bit (1=cloudy, 0=clear)
+	  3     unused
+	  4     ACCA snow mask
+	  5     land mask based on DEM (1=land, 0=water)
+	  6     DDV
+	  7     unused
+	  8     internal cloud mask (1=cloudy, 0=clear)
+	  9     cloud shadow
+	  10    snow mask
+	  11    land/water mask based on spectral test
+	  12    adjacent cloud
+	  13-15 unused
+

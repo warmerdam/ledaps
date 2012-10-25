@@ -1,0 +1,27 @@
+/* This include file generates the correct FORTRAN syntax for including
+   the tapeio parameters. */
+#ifdef gould
+	include '$LASINCLUDE/pixman.fin'
+	include '$LASINCLUDE/typlimg.fin'
+#endif
+
+#ifdef ibm
+	include '$LASINCLUDE/pixman.fin'
+	include '$LASINCLUDE/typlimi.fin'
+#endif
+
+#ifdef sun
+	include '$LASINCLUDE/pixman.fin'
+	include '$LASINCLUDE/typlims.fin'
+#endif
+
+#ifdef vms
+	include 'lasinclude:pixman.fin'
+	include 'lasinclude:typlimv.fin'
+#endif
+
+#ifdef sgi
+	include '$LASINCLUDE/pixman.fin'
+	include '$LASINCLUDE/typlimsg.fin'
+#endif
+

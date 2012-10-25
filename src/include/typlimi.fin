@@ -1,0 +1,42 @@
+C  Data type limits 
+C------------------
+
+C Fortran	   C	
+C Parameter	Constant	Value	Description
+C ---------	--------	-----	-----------
+C MAXUTINY	MAXUTINY	  255	Maximum value of byte data type
+C MINUTINY	MINUTINY	    0   Minimum value of byte data type
+	integer*4 MAXUTINY,MINUTINY
+
+	parameter (MAXUTINY = 255,
+     .		   MINUTINY = 0)
+
+C Fortran	   C	
+C Parameter	Constant	Value	Description
+C ---------	--------	-----	-----------
+C MAXWORD	MAXWORD	  	32767	Maximum value of I*2 data type
+C MINWORD	MINWORD	       -32768   Minimum value of I*2 data type
+	integer*4 MAXWORD,MINWORD
+
+	parameter (MAXWORD = 32767,
+     .		   MINWORD = -32768)
+
+C Fortran	   C	
+C Parameter	Constant	Value	Description
+C ---------	--------	-----	-----------
+C MAXLONG	MAXLONG	   2147483647	Maximum value of I*4 data type
+C MINLONG	MINLONG	  -2147483648   Minimum value of I*4 data type
+	integer*4 MAXLONG,MINLONG
+
+	parameter (MAXLONG = 2147483647,
+     .		   MINLONG = -2147483647 - 1)
+
+C Fortran	   C	
+C Parameter	Constant	Value	Description
+C ---------	--------	-----	-----------
+C MAXREAL	MAXREAL	    3.4028e38	Maximum value of R*4 data type
+C MINREAL	MINREAL	   -1.4013e45   Minimum value of R*4 data type
+	real*4 MAXREAL,MINREAL
+
+	parameter (MAXREAL = 3.4028e38,
+     .		   MINREAL = -1.4013e45)

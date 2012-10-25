@@ -1,0 +1,7 @@
+/* This include file generates the correct FORTRAN syntax for including
+   the data descriptor record (ddr) parameters. */
+#ifdef vms
+	include 'lasinclude:diskio.fin'
+#else
+	include '$LASINCLUDE/diskio.fin'
+#endif

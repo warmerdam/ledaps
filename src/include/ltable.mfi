@@ -1,0 +1,9 @@
+/* 
+*  This include file generates the correct FORTRAN syntax for including
+*  the labeled table (LT) parameters.
+*/
+#ifdef vms
+	include 'lasinclude:ltable.fin'
+#else
+	include '$LASINCLUDE/ltable.fin'
+#endif

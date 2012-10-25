@@ -1,0 +1,72 @@
+* Tape I/O entry points.
+*	integer tpbsf,  tpbsr,  tpclos, tpfsf,  tpfsr  ,tpopen,
+*               tpread, tpreop, tprew,  tpweof, tpwrit
+* Tape I/O symbolic function return status codes.
+*  FORTRAN    C
+* symbolic constant             Meaning
+* -------- --------             -------
+*  TSUCC   TAPE_SUCC            Success
+*  TFAIL   TAPE_FAIL            Failure
+*  TEOV    TAPE_EOV		End of volume detected
+*  TEOT    TAPE_EOT             End of tape detected
+*  TERWND  TPOPEN_REW           Error rewinding tape
+*          TPREW_REW
+*          TPCLOS_REW
+*  TESKIP  TPOPEN_SKIP          Error skipping files on tape
+*          TPFSF_SKIP
+*  TEWRIT  TPWRIT_WRITE         Error writing data to tape
+*  TEREAD  TPREAD_READ          Error reading data from tape
+*  TEWEOF  TPWEOF_WEOF          Error writing end of file mark
+*          TPCLOS_WEOF 
+*  TEOPEN  TPOPEN_OPEN		Error opening a file on tape
+*          TPCLOS_OPEN
+*          TPREW_OPEN
+*  TEOPT   TPCLOS_OPT		Error in close option
+*  TEOFFL  TPCLOS_OFFL          Tape is off line
+*          TPREW_OFFL
+*  TECLSE  TPCLOSE_CLOSE        Error closing a file on tape
+*          TPREW_CLOSE
+*  TESIZE  TPWRIT_SIZE          Error writing to tape
+*  TEBSR   TPBSR_BSR            Error back spacing records
+*  TEFSR   TPFSR_FSR            Error forward spacing records
+*  TEBSF   TPBSF_BSF            Error back spacing files
+*  TEBOF   TAPE_BOF
+*  TEDEN   TPOPEN_BADENS         
+*  TSMAL   TAPE_SMAL		Buffers to small
+*  TEBOT   TAPE_BOT
+*  TEEOF   TAPE_EOF
+*  TNDRIV  TPOPEN_NOAVAIL       Tape drive not available
+	integer					 
+     .		TSUCC,	TFAIL, 	TEOV,   TEOT,   TERWND,	TESKIP,	TEWRIT
+     .,		TEREAD,	TEWEOF,	TEOPEN,	TEOPT,	TEOFFL,	TECLSE,	TESIZE
+     .,		TEBSR,	TEFSR,	TEBSF,	TNDRIV, TEBOF,  TEDEN,  TSMAL
+     .,		TEBOT,	TEEOF
+        parameter(
+     .		TSUCC  =   0, TFAIL  =  -1, TEOV   =  -2, TEOT   =  -3
+     .,		TERWND =  -7, TESKIP =  -4, TEWRIT =  -9, TEREAD = -10
+     .,		TEWEOF = -11, TEOPEN = -13, TEOPT  = -13, TEOFFL = -15
+     .,		TECLSE = -17, TESIZE = -19, TEBSR  = -20, TEFSR	 = -21
+     .,		TEBSF  = -22, TNDRIV = -23, TEBOF  = -97, TEDEN  = -36
+     .,         TSMAL  = -39, TEBOT  = -98, TEEOF  = -99
+     .           )
+
+* Image I/O symbolic constants.
+*  FORTRAN    C
+* symbolic constant             Value   Meaning
+* -------- --------             -----   -------
+*  TNOREW  NOREW		  0	Do not rewind tape
+*  TREWND  REWIND                 1     Rewind tape but remain on line
+*  TRWOFL  REWOFFL                2     Rewind tape and take off line
+*  HANDLE  HANDLE                 1     Tape I/O routines print error messages
+*  NOHAND  NO_HANDLE              0     Do not print an error message
+*  TREAD   TREAD                  0     Read access
+*  TWRITE  TWRITE                 1     Write access
+*  TUPDAT  TUPDATE                2     Update access
+	integer
+     .		TNOREW,	TREWND,	TRWOFL,	HANDLE,	TREAD,	TWRITE,	TUPDAT,
+     .          NOHAND
+	parameter (
+     .		TNOREW = 0, TREWND = 1, TRWOFL = 2, HANDLE = 1
+     .,		TREAD = 0,  TWRITE = 1, TUPDAT = 2, NOHAND = 0
+     .		  )
+

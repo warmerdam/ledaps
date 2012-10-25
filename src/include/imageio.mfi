@@ -1,0 +1,29 @@
+/* This include file generates the correct FORTRAN syntax for including
+   the imageio parameters. */
+#ifdef gould
+	include '$LASINCLUDE/imageiog.fin'
+#endif
+
+#ifdef ibm
+	include '$LASINCLUDE/imageioi.fin'
+#endif
+
+#ifdef sun
+	include '$LASINCLUDE/imageios.fin'
+#endif
+
+#ifdef vms
+	include 'lasinclude:imageiov.fin'
+#endif
+
+#ifdef sgi
+	include '$LASINCLUDE/imageiosg.fin'
+#endif
+
+#ifdef DGUX
+	include '$LASINCLUDE/imageiosg.fin'
+#endif
+
+#ifdef linux
+        include '$LASINCLUDE/imageiosg.fin'
+#endif

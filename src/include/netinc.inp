@@ -1,0 +1,243 @@
+/****************************************************************************
+ *      Copyright (c) 1993, 1994
+ *      Century Computing, Inc.
+ *      ALL RIGHTS RESERVED
+ *
+ *      The software (programs, data bases and/or documentation) on or in
+ *      any media can not be reproduced, disclosed, or used except under
+ *      the terms of the TAE Plus Software License Agreement.
+ *
+ ***************************************************************************/
+
+
+
+/* INCLUDE FILE DEFINING PARAMETERS FOR NETWORK COMMUNICATION 
+ *
+ *
+ * CHANGE LOG:
+ * 
+ *      2-nov-84        Initial release...dm
+ *      29-nov-84       Modified structures and defines for new NETLIB...krw
+ *      20-dec-84       Changed N_TERM to N_EXIT...dm
+ *      14-jan-85       Add definitions related to net file copy...dm
+ *      15-jan-85       Merged Session Layer and DECNET definitions...krw
+ *      29-jan-85       Add extra field 'suspend' in ccb ...dm
+ *      06-feb-85       Add error code N_NOLINK...dm
+ *      13-feb-85       Change NETBUFDIM to CMDLINSIZ...dm
+ *      14-feb-84       Delete GBLDEF and GBLREF declarations, also moved
+ *                      special file type definitions to TAECONF...dm
+ *      04-mar-85       Add N_TUTHELP...nhe
+ *      07-mar-85       Redefine GLOBAL after types.h include...dm
+ *      12-mar-85       Delete N_TUTHELP, add N_LOCATE...dm
+ *      07-apr-85       Delete N_BLOCKSEND/RECV, add N_DYNREQ...dm
+ *      15-apr-85       Increase NETBUFDIM value...dm
+ *      21-may-85       Add .busy to CCB to avoid EGNET KERNEL locking...dm
+ *      20-jun-85       Add N_PLAIN, N_ENCODE...nhe
+ *      31-jul-85       Add NETLOGLUN...nhe
+ *      16-aug-85       Delete NODENAMESIZ (defined in ASYNCINC)...dm
+ *      30-Oct-86       Changes for TCP/IP version...rn
+ *                      - deleted session layer stuff
+ *                      - deleted vms stuff
+ *                      - renamed file to netinc.inp
+ *	16-may-88	N_LINKABORT...ljn
+ *	28-oct-88	Include of in.h taken out of conditional...ljn
+ *	10-nov-88	Move #define of SUN_TCP here from Make files. Should
+ *			this name be changed to UNIX_TCP?...ljn
+ *	02-aug-89	PS/2 port...ljn
+ *
+ */
+ 
+#ifndef I_NETCOM
+#define I_NETCOM  0             /* avoid double definition      */
+
+#ifndef _TYPES_
+#include <sys/types.h>
+#endif
+#include <netinet/in.h>
+
+#define SUN_TCP
+ 
+/*****************************************************************************
+        "n_" routine status codes
+*****************************************************************************/
+
+#define N_TBD           -1      
+#define N_PENDING       0               /* Asynchronous event is pending  */
+#define N_SUCCESS       1               /* Normal Successful completion   */
+#define N_HOSTERR       2               /* check hstatus for unix code    */
+#define N_NOLINK        3               /* TBDTBDTBD: how to determine? */
+#define N_INTERR	4		/* internal error		*/
+#define N_TIMEOUT	5		/* timeout			*/
+
+#define N_BUFOVR        110
+#define N_ISINIT        111
+
+#define N_NO_ACCEPT     N_HOSTERR
+#define N_NO_BIND       N_HOSTERR
+#define N_NO_CLOSE      N_HOSTERR
+#define N_NO_CONNECT    N_HOSTERR
+#define N_NO_FCNTL	N_HOSTERR
+#define N_NO_LISTEN     N_HOSTERR
+#define N_NO_RECV       N_HOSTERR
+#define N_NO_SEND       N_HOSTERR
+#define N_NO_SOCKET     N_HOSTERR
+#define N_NO_SUCHHST    120
+#define N_NO_SUCHSRV    121
+
+#define N_NOTINIT       122
+#define N_NOTYET        123
+#define N_REJECTED      124
+
+
+
+typedef int     T_TBD;                  /* tbd type                     */
+typedef T_TBD   T_SDI;                  /* socket descriptor index      */
+typedef int	(*FUNCPTR) ();		/* ptr to func returning int	*/
+/* 
+ *      Structure Definitions.
+ */
+
+typedef struct S_RCB    /* Request Control Block        */
+    {
+    struct S_RCB *p_next;	/* MBF: next active rcb			*/
+				/* *** MBF means Must Be First!!!	*/
+    int         usr1,usr2 ;     /* words available to user      	*/
+    int		rm, wm, sm, force;/* select() masks for read/write/special*/
+    int		sgmf;		/* n_snd/getmsg flag			*/
+    int		rdlen;		/* n_getmsg: bytes to read to user buf	*/
+    int		eatlen;		/* n_getmsg: bytes left to eat		*/
+    FUNCPTR     p_func;         /* netlib completion routine    	*/
+    int		a1,a2,a3,a4,a5;	/* arguments to p_func			*/
+    FUNCPTR     p_func2;        /* user's completion routine    	*/
+    char        *p_rtn;         /* string: called n_ routine name	*/
+    int         status  ;       /* network status code (generic)	*/
+    long        hstatus ;       /* host specific status code    	*/
+    int         readlen ;       /* amount of data actually read 	*/
+    struct S_CCB *p_ccb ;       /* pointer to associated CCB    	*/
+    char        *p_ers;         /* string: error text           	*/
+    int		timer;		/* time left for current I/O request	*/
+    char	buf[256];	/* buffer for temporary use (async)	*/
+    } T_RCB;
+
+/*****************************************************************************
+        There is one Connection Control Block (CCB) per ACTIVE connection.
+  Once a connection has been established, the information in the CCB is used
+  by the network library (NETLIB) to remember the state of the connection.
+  Consequently, the user should not alter any values but access is free...KRW
+*****************************************************************************/
+
+typedef struct S_CCB            /* Connection Control Block             */
+    {
+    BIT_FIELD_ALIGN
+    unsigned int inited	  :1;	/* initialized				*/
+    unsigned int connected:1;	/* connect() call succeeded		*/
+    unsigned int accepted :1;   /* connect request accepted by user	*/
+    unsigned int suspend  :1;   /* dummy for previous versions          */
+    BIT_FIELD_ALIGN
+
+    T_SDI       sdi;            /* connect's socket descriptor index    */
+
+/* the cname field contains a socket address in internet format 
+ * (sockaddr_in).  For a client, it is the address of the target server.
+ * For a server, for the master ccb, it is the address of the server's
+ * published port.  For a server, for a ccb returned by n_getcon, it
+ * is the address of the connected client.
+ */
+
+    union
+        {
+        char			bytes[32];
+        int			words[8];
+        struct sockaddr_in	sin;
+        } cname;                /* internet socket address		*/
+    int         l_cname;        /* significant length of cname.sin	*/
+    int		proto;		/* protocol family			*/
+    } T_CCB;
+
+
+
+/*
+ *      Redefine GLOBAL to null as TYPES.H defines it as 'globaldef'
+ *      which is non-portable.
+ */
+#define  GLOBAL 
+
+/*
+ *      Network service request types.
+ */
+#define  CONNECT_REQ            1       /* connection request           */
+#define  CONNECT_RECV           2       /* receive a connect request    */
+#define  CONNECT_ACCEPT         3       /* connection accept            */
+#define  CONNECT_REJECT         4       /* connection reject            */
+#define  DISCON_NORMAL          5       /* normal disconnet of link     */
+#define  DISCON_ABORT           6       /* link abort                   */
+#define  DATA_SEND              7       /* send data over network       */
+#define  EVENT_REQ              8       /* reqest to get next event     */
+#define  EVENT_RECV             9       /* receive info on network event*/
+
+/*
+ *      Network event types.
+ */
+#define  DATA_RECV              101     /* data received from network   */
+#define  LINK_DISCON            102     /* link disconnected by peer    */
+#define  LINK_ABORT             103     /* link aborted by peer         */
+#define  LINK_EXIT              104     /* peer task exited             */
+#define  NET_SHUT               105     /* remote node shut down        */
+#define  NET_FAIL               106     /* network operation  failure   */
+#define  NO_EVENT               0       /* not one of above type        */
+/*
+ *      Other constants
+ */
+#define  NETBUFDIM      CMDLINSIZ+100   /* network buffer size            */
+#define  NETDATADIM     NETBUFDIM-5     /* max length of data in buffer   */
+#define  DATA_CODE              0       /* offset for data code in buffer */
+#define  DATA_SUBCODE           2       /* offset for data subcode        */
+#define  SEGMENT_TYPE           4       /* last segment of record indicator */
+#define  DATA_START             5       /* offset for start of user data  */
+#define  TASKNAMESIZ            10      /* network task name              */
+#define  MAIL_MSGSIZ            132     /* maximum length of mailbox msg  */
+#define  OPT_DATASIZ            16      /* maximum optional data size     */
+#define  LASTSEG                'L'     /* last buffer of a record        */
+#define  NOT_LASTSEG            'N'     /* not the last buffer of record  */
+
+#define  N_INVALID              -99     /* invalid data receive code      */
+
+/* 
+ *      User data and control codes and subcodes        
+ */
+#define  N_DATA                 20      /* transparent data               */
+
+/*   data subcodes  MUST BE LESS THAN 100       */
+#define  N_TEXT                 21      /* TEXT record                    */
+#define  N_BINARY               22      /* binary record                  */
+#define  N_PAR                  23      /* TAE parameter block            */
+#define  N_SAVE                 24      /* special save data type       */
+#define  N_EOF                  25      /* end-of-file indicator          */
+#define  N_PLAIN                26      /* want to xfer file as is        */
+#define  N_ENCODED              27      /* want to xfer file encoded      */
+
+
+#define  N_CONTROL              30      /* control data for peer          */
+
+/*   control subcodes   */
+#define  N_INIT                 31      /* initial job information data   */
+#define  N_SENDFILE             32      /* request peer to send a file    */
+#define  N_RECVFILE             33      /* inform peer to receive a file  */
+#define  N_START                34      /* handshake msg at job start     */
+#define  N_SYNC                 35      /* handshake msg for synchronization */
+#define  N_DYNREQ               36      /* inform peer of dynpar request  */
+#define  N_FILECOMP             38      /* receive file components        */
+#define  N_PROCEXEC             39      /* execute the proc               */
+#define  N_STATUS               40      /* a status message               */
+#define  N_EXIT                 41      /* task(agent) exit message       */
+#define  N_JOBTERM              42      /* remote job termination message */
+#define  N_JOBABORT             43      /* remote job abort message       */
+#define  N_LOCATE               44      /* request peer to locate a file  */
+#define  N_LINKABORT		45	/* link abort message             */
+
+#define  N_TYPERR               98      /* Incompatible data type         */
+#define  N_ERR                  99      /* error (data/control) subcode   */
+#define  AG_NETERR              100
+
+#define NETCOPYLUN              1
+#endif

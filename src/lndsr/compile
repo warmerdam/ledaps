@@ -1,0 +1,1 @@
+cc -ansi -I/usr/local/include -o$1 $1.c -L/usr/local/lib -lmfhdf -ldf -L/home/tklim/MRT_LINUX/lib -ljpeg -lz

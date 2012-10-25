@@ -1,0 +1,39 @@
+C ****************************************************************************
+C *				DLTF Include File			     *
+C *									     *
+C *  This include file defines the support and application parameters 	     *
+C *  necessary for use of the Display and Look-up Table File.		     *
+C *									     *
+C *  By D. Akkerman, USGS/EROS Data Center, 10/88			     *
+C *									     *
+C ****************************************************************************
+
+C  Below are the necessary parameters to be used in the DLTF bridge routines.
+C  __________________________________________________________________________
+
+C  NUMBND	- Number of bands in the DLTF entry.
+C  DBAND(256)	- Band numbers of the image used to specify the LUT(s) to save.
+C  DWINDOW(4)	- The display window of the image whose LUT(s) were saved.
+C  IXZOOM	- X zoom factor of the image planes.
+C  IYZOOM	- Y zoom factor of the image planes.
+C  GXZOOM	- X zoom factor of the graphics planes.
+C  GYZOOM	- Y zoom factor of the graphics planes.
+C  IXSHFT	- X shift factor of the image planes.
+C  IYSHFT	- Y shift factor of the image planes.
+C  GXSHFT	- X shift factor of the graphics planes.
+C  GYSHFT	- Y shift factor of the graphics planes.
+
+C  DLTFSZ	- Total size of the array to be dimensioned (I*4).
+C  DESLEN       - Length of the description field of the DLTF record.
+C  KEYLEN       - Length of the key field of the DLTF record.
+C  KEYTL        - True length of the key field used by Label Services.
+C  DTYPL        - Length of the data type field of the DLTF record.
+
+      integer*4 NUMBND,DBAND,DWINDOW,IXZOOM,IYZOOM,GXZOOM,GYZOOM,IXSHFT,
+     +		IYSHFT,GXSHFT,GYSHFT,DLTFSZ,DESLEN,KEYLEN,KEYTL,DTYPL
+
+      parameter (NUMBND = 1, DBAND = 2, DWINDOW = 258, IXZOOM = 262,
+     +		 IYZOOM = 263, GXZOOM = 264, GYZOOM = 265, IXSHFT = 266,
+     +		 IYSHFT = 267, GXSHFT = 268, GYSHFT = 269, DLTFSZ = 269,
+     +		 DESLEN = 81, KEYLEN = 13, KEYTL = 16, DTYPL = 3)
+

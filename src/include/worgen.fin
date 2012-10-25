@@ -1,0 +1,60 @@
+C  This is a general WORLD include file.  The constants within this include 
+C    file are used by many if not all the LAS support and application routines
+C-----------------------------------------------------------------------------
+
+C SUCCESS or FAIL return status,
+C End of File, & Buffer to small
+C-------------------------------
+C FORTRAN	   C		VALUE		DESCRIPTION
+C SYMBOL	CONSTANT	
+C--------	--------	-----		-----------
+C ESUCC 	E_SUCC		  0		successful status
+C EFAIL		E_FAIL		 -1		failed status
+C EEOF		E_EOF		 -2		end of file status
+C ESMAL		E_SMAL		 -3		buffer too small status
+
+	integer*4 ESUCC, EFAIL, EEOF, ESMAL
+	parameter (ESUCC = 0, EFAIL = -1, EEOF = -2, ESMAL = -3)
+
+C Character string lengths
+C-------------------------
+C FORTRAN	   C		VALUE		DESCRIPTION
+C SYMBOL	CONSTANT	
+C--------	--------	-----		-----------
+C ERRLEN	ERRLEN		 256		length of error message string
+C CMLEN		CMLEN		 256		length of file name string
+
+	integer*4 ERRLEN, CMLEN
+
+	parameter (ERRLEN = 256, CMLEN = 256)
+
+C Valid data types 
+C-----------------
+C FORTRAN	   C		VALUE		DESCRIPTION
+C SYMBOL	CONSTANT	
+C--------	--------	-----		-----------
+C EBYTE		EBYTE		  1		byte data type
+C EWORD		EWORD		  2		word data type
+C ELONG		ELONG		  3		long data type
+C EREAL		EREAL		  4		real data type
+C EDBLE		EDOUBLE		  5		double precision data type
+C NDTYPE	NDTYPES		  6		number of data types
+	
+	integer*4 EBYTE, EWORD, ELONG, EREAL,
+     .		   EDBLE, NDTYPE
+
+	parameter (EBYTE = 1, EWORD = 2, ELONG = 3, EREAL = 4,
+     .		   EDBLE = 5, NDTYPE = 6)
+
+C File access types 
+C------------------
+C FORTRAN	   C		VALUE		DESCRIPTION
+C SYMBOL	CONSTANT	
+C--------	--------	-----		-----------
+C IREAD		IREAD		  0		Read access
+C IWRITE	IWRITE		  1		Write access
+C IUPDAT	IUPDATE		  2		Update access
+
+	integer*4 IREAD, IWRITE, IUPDAT
+
+	parameter (IREAD = 0, IWRITE = 1, IUPDAT = 2)

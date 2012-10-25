@@ -1,0 +1,24 @@
+C Image I/O entry points.
+C	integer eclose, egclse, egroup, eopenr, eopens,  eread,  estep,  ewrite
+C Image I/O symbolic constants.
+C  FORTRAN    C
+C symbolic constant             Value   Meaning
+C -------- --------             -----   -------
+C BSIZE    BSIZE	     1024000	buffer size
+C MAXBND   MAXBND		 256	Maximum number of bands to be processed
+C MAXIMG   MAXIMG      based on machine Maximum number of images to be processed
+C MAXNL    MAXNL	       50000    Maximum number of samples per line     
+C MAXNS    MAXNS	       50000    Maximum number of lines to be processed
+C COMPRES  COMPRES		   5	Compression flag to compres
+C NO_COMPRES NO_COMPRES		   6	Compression flag to not compres
+	integer*4
+     .		BSIZE, MAXBND,
+     .          MAXIMG, MAXNS, MAXNL, COMPRES, NO_COMPRES
+
+	parameter (BSIZE = 1024000,
+     .		  MAXBND =  256,
+     .            MAXNL = 50000, MAXNS = 50000)
+
+	parameter (MAXIMG = 54)
+	parameter (COMPRES = 5)
+	parameter (NO_COMPRES =6)

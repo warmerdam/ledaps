@@ -1,0 +1,41 @@
+c
+c                          STATIO include file
+c
+c   This is the include file needed by application programs
+c
+
+	integer		MAXCLS, MAXSIT
+	parameter (MAXCLS = 256)
+	parameter (MAXSIT = 256)
+
+	integer		STNAME
+	parameter (STNAME = 100)	! length of class and site names
+
+	integer		ECOMP, EDCOMP
+	parameter (ECOMP  = 7)		! complex data type
+	parameter (EDCOMP = 8)		! double complex data type
+
+	integer		IUNKNO
+	parameter (IUNKNO = 3)		! Unknown access for stopen
+
+c Status return codes
+
+	integer		EGNLIO, ENOCL,  ENOSI,  ENODT
+	integer		ENOCLN, ENOSIN, EOPOLD, EOPNEW
+	integer		EDTOLD, EDTNEW, EINVCL, EINVSI
+	integer		EINVDT, EINVNM
+
+	parameter (EGNLIO = 1)		! general I/O error
+	parameter (ENOCL  = 2)		! class ic not found
+	parameter (ENOSI  = 3)		! site is not found
+	parameter (ENODT  = 4)		! data-type not found
+	parameter (ENOCLN = 5)		! class name not found
+	parameter (ENOSIN = 6)		! site name not found
+	parameter (EOPOLD = 7)		! old file opened
+	parameter (EOPNEW = 8)		! new file created - no old file
+	parameter (EDTOLD = 9)		! old data replaced
+	parameter (EDTNEW = 10)		! new data entered
+	parameter (EINVCL = 11)		! class ic not found/invalid
+	parameter (EINVSI = 12)		! site is not found/invalid
+	parameter (EINVDT = 13)		! error in data_type.
+	parameter (EINVNM = 14)		! class or site name too long

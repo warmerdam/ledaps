@@ -1,0 +1,70 @@
+HISTORY.txt for MOD_SR   (Landsat Surface Reflectance)
+This file shows the following:
+  (a) What was changed in the Process
+  (b) Why it was changed
+  (c) How the output product will be affected by the change
+  (d) The date of the change was made
+                                                                                                            
+v1.0.0                                                                          03/28/03
+========================================================================================
+1. Initial version.   (2/14/03)
+   Added geo projection information  (3/18)
+   Added gdas inputs   (3/24)
+   Patched code 'output.c' for fixing the incorrect values for "BandNumbers"
+                                                                                                            
+v1.0.1                                                                          04/03/03
+========================================================================================
+1. Patch of mystring.h Line 45 (The fourth gdas inpts of path/filename was truncated
+   MAX_STR_LEN of 256 was too small) (4/3)
+                                                                                                            
+v1.0.2                                                                           6/10/03
+========================================================================================
+1. Added PGEVersion/ProcessVersion global attributes in HDF output
+                                                                                                            
+v1.0.3                                                                           9/3/03
+========================================================================================
+1. Added Cloud mask file to the inputs (8/11)
+2. Changed runtime parameter value 'NCEP_FILE' to 'NCEP_FIL' in param.c
+                                                                                                            
+v1.0.4                                                                         11/18/03
+=======================================================================================
+1.  Uses DN values
+2.  TOMS,Re-Ananlysis (TOMS_OZD, RA_SPWVD) ancillary datafiles for "lndsr"
+                                                                                                            
+v1.0.5                                                                         04/02/04
+=======================================================================================
+1.  deliveries from Nazmi (4/02, 4/09)
+    Writes out the red aot only, adds a QA layer and fixes the cloud_mask_flag bug
+
+    For ledaps machine: Changed SIXS_PGM to "/home/v1led1/bin/sixsv5.2" in external_pgm.h
+    (Copied sixsv5.2 from /home/nazmi/bin directory of landqa1 machine)
+
+v1.0.6                                                                         02/01/05
+=======================================================================================
+1. delivery from Nazmi (02/01/2005)
+2. Changed lndsr.c, param.c, param.h for the ancillary file(tbase.bin) interface
+3. modified myhdf.c (Bugfixed of strlen problem)
+
+v1.0.7                                                                          7/29/05
+=======================================================================================
+1. add metadata information for 5 extra SDS attributes
+
+v2.0.0                                                                          4/19/06
+=======================================================================================
+1. SIXS_PGM "/home/v1led1/bin/sixsV1.0B"  (use of vector rather than scalar)
+2. Use of lndcal's new saturation flag 
+3. Added new runtime Parameter TEMP_FILE (Thermal input file is optional)
+4. Changed CSM_FILE (Cloud-sanow mask file to optional) 
+
+V2.0.1                                                                         11/15/06
+=======================================================================================
+1. Four updated routines from Eric on 11/14/06 (ar.c, lndsr.c myhdf.c, space.c)
+2. Run with new ancillary Ozone daily files ("Platform" field has NIMBUS7, METEOR3 or
+EARTHPROBE.  Dummy files has NIMBUS7_FILL, METEOR3_FILL or EARTHPROBE_FILL)
+3. Changed aot_band1:scale_factor from 0.0001 to 0.001 ("lut.c" "lut.h" and "output.c")
+4.  New "output.c" file with correct description of thos cloud bits.
+
+V2.0.5
+=============================================================================
+1. update to be compatible with changes to lndcal (saturation value)
+2. remove some debugging output

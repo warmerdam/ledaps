@@ -1,0 +1,130 @@
+C  Below are the constants to be used as keys to GETDDF, PUTDDF
+C--------------------------------------------------------------
+
+C DDNL 0	   number of lines
+C DDNS 1	   number of samples
+C DDNB 2	   number of bands
+C DDDTYP 3	   data type  
+C DDML 4	   master line
+C DDMS 5	   master sample
+C DDVFLG 6	   validity array
+C DDPCOD 7	   Projection code
+C DDZCOD 8	   zone code 
+C DDDCOD 9	   Datum code
+C DDSYS 10	   System   
+C DDUNIT 11	   Projection unit
+C DDLDAT 12	   Last used date
+C DDLTIM 13	   last used time
+C DDPCF 14	   Projection coefficients array
+C DDUL 15	   Upper left 
+C DDLL 16	   Lower left
+C DDUR 17	   Upper right 
+C DDLR 18	   Lower right
+C DDPDY 19	   Projection distance-y 
+C DDPDX 20	   Projection distance-x
+C DDLINC 21	   Line increment
+C DDSINC 22	   Sample increment	
+
+	integer*4 DDNL, DDNS, DDNB, DDDTYP, DDML, DDMS, DDVFLG, 
+     .		  DDPCOD, DDZCOD, DDDCOD, DDSYS, DDUNIT, DDLDAT, 
+     .		  DDLTIM, DDPCF, DDUL, DDLL, DDUR, DDLR, DDPDY, DDPDX,
+     .		  DDLINC, DDSINC
+
+	parameter (DDNL = 0, DDNS = 1, DDNB = 2, DDDTYP = 3, DDML = 4, 
+     .		   DDMS = 5, DDVFLG = 6, DDPCOD = 7, DDZCOD = 8, 
+     .		   DDDCOD = 9, DDSYS = 10, DDUNIT = 11, DDLDAT = 12,
+     .		   DDLTIM = 13, DDPCF = 14, DDUL = 15, DDLL = 16,
+     .		   DDUR = 17, DDLR = 18, DDPDY = 19, DDPDX = 20,
+     .		   DDLINC = 21, DDSINC = 22)
+
+C  Below are the constants to be used as keys to GETBDF and PUTBDF
+C-----------------------------------------------------------------
+C DDBAND 100	   Band number	
+C DDMMV 101	   Min/max validity
+C DDMIN 102	   Minimum valued
+C DDMAX 103	   Maximum valued
+C DDSRC 104	   Source of band
+C DDINST 105	   Instrumentband
+C DDDIR 106	   Direction band
+C DDCDAT 107	   Capture date
+C DDCTIM 108	   Capture time
+
+	integer*4 DDBAND, DDMMV, DDMIN, DDMAX, DDSRC, DDINST, DDDIR, 
+     .	  	  DDCDAT, DDCTIM
+
+	parameter (DDBAND = 100, DDMMV = 101, DDMIN = 102, DDMAX = 103,
+     .		   DDSRC = 104, DDINST = 105, DDDIR = 106, DDCDAT = 107, 
+     .		   DDCTIM = 108)
+
+
+C  Below are the constants to retreive the correct validity flag from the
+C  validity flag array	
+C-------------------------------------------------------------------------
+C DDPCV 1	   projection code validity flag	      
+C DDZCV 2	   zone code validity flag		     
+C DDDCV 3	   datum code validity flag		  
+C DDPPV 4	   projection parameters validity flag     
+C DDPUV 5	   projection units validity flag		 
+C DDPDV 6	   projection distance validity flag	 
+C DDCCV 7	   corner coordinates validity flag	  
+C DDINCV  8	   line/sample increments validity flag      
+C DDNVAL  8	   Number of valid flags
+
+	integer*4 DDPCV, DDZCV, DDDCV, 
+     .		  DDPPV, DDPUV, DDPDV,
+     .		  DDCCV, DDINCV, DDNVAL
+
+	parameter (DDPCV = 1, DDZCV = 2, DDDCV = 3, 
+     .		  DDPPV = 4, DDPUV = 5, DDPDV = 6,
+     .		  DDCCV = 7, DDINCV = 8, DDNVAL = 8)
+
+
+C  Below are misc. DDR constants
+C-------------------------------
+C E_PROT -2        return value for write protection
+
+	integer*4 EPROT
+	parameter (EPROT = -2)
+
+C INVAL  0  	   invalid validity flag
+C VALID  1         valid validity flag
+C UNKNOW 2         unknown and equal validity flag
+C BOUND 2	   bounded status of min/max values
+C COMB 1	   images are being combined into one band    
+C NOCOMB 0 	   images are not being combined into one band
+
+         integer*4 INVAL, VALID, UNKNOW, BOUND, COMB, NOCOMB
+         parameter (INVAL = 0, VALID = 1, UNKNOW = 2,
+     .              BOUND = 2, COMB = 1, NOCOMB = 0)
+
+C Below are constants that specfiy the size the character arrays to be
+C declared in FORTRAN to hold the 'C' structures DDR and BDDR
+C---------------------------------------------------------------------
+C BDRLEN 170 	   size of BDDR character array
+C DDRLEN 332	   size of DDR character array
+
+	integer*4 BDRLEN, DDRLEN
+
+	parameter (BDRLEN = 170, DDRLEN = 332)
+
+C Below are the constants that specify the size of the character strings
+C of the DDR
+C-----------------------------------------------------------------------
+C DDSRLN 32	size of the SOURCE character string
+C DDINLN 32	size of the INSTRUMENT character string
+C DDDRLN 64	size of the DIRECTION character string
+C DDCDLN 10	size of the CAPTURE DATE character string
+C DDCTLN 64	size of the CAPTURE TIME character string
+
+C DDSYLN 12	size of the SYSTEM character string
+C DDPULN 12	size of the PROJ_UNITS character string
+C DDLDLN 12	size of the LAST_USED_DATE character string
+C DDLTLN 12	size of the LAST_USED_TIME character string
+
+	integer*4 DDSRLN, DDINLN, DDDRLN, DDCDLN,
+     .		  DDCTLN, DDSYLN, DDPULN, DDLDLN,
+     .		  DDLTLN
+
+	parameter (DDSRLN = 32, DDINLN = 32, DDDRLN = 64, DDCDLN = 10,
+     .		   DDCTLN = 64, DDSYLN = 12, DDPULN = 12, DDLDLN = 12,
+     .		   DDLTLN = 12)

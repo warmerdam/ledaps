@@ -1,0 +1,36 @@
+C  Return status values from disk handling routines
+C--------------------------------------------------
+C DEXIST	-2			/* file exists		  */
+C DGONE		-3			/* file does not exist	  */
+C DNSPAC	-4			/* no space for file	  */
+C MXPATH	50			/* maximum number of paths*/
+
+	integer DEXIST,DGONE,DNSPAC,MXPATH
+
+	parameter (DEXIST = -2,DGONE = -3,DNSPAC = -4,MXPATH = 50)
+
+C  define unix disk
+C------------------
+#ifdef gould
+#define UNIX_DISK	
+#endif
+#ifdef sparc
+#define UNIX_DISK	
+#endif
+#ifdef sgi
+#define UNIX_DISK	
+#endif
+#ifdef DGUX
+#define UNIX_DISK	
+#endif
+
+C  Disk handling routines
+C------------------------
+C	create a disk file
+	integer*4	c_dkcre
+
+C  The size of the disk file that can be created with this routine
+C  is limited to the precision of a long integer (i.e. 2,147,483,647 bytes).
+C--------------------------------------------------------------------------- 
+C	delete a disk file
+	integer*4	c_dkdel

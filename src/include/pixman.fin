@@ -1,0 +1,15 @@
+C Fortran	   C	
+C Parameter	Constant	Value	Description
+C ---------	--------	-----	-----------
+C   TOOBIG	 TOOBIG		   77	Output value to large for data type
+C   TOOSMALL     TOOSMALL	   88	Output value to small for data type
+C   BIGSMALL	 BIGSMALL	   95   Both TOOBIG and TOOSMALL errors
+C					were encountered in array
+C   TYPERR	 TYPERR		   66	Not a correct data type
+
+	integer TOOBIG, TOOSMALL, BIGSMALL, TYPERR
+
+	parameter (TOOBIG = 77,
+		   TOOSMALL = 88,
+		   BIGSMALL = 95,
+		   TYPERR = 66)

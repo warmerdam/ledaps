@@ -1,0 +1,97 @@
+c  Defines the valid systems
+	INTEGER*4 NMRSYSTEMS,
+     .		  SYSPNUTX,
+     .            SYSSUNBSD,
+     .		  SYSVAXULT,
+     .		  SYSVAXVMS,
+     .		  SYSIEEESTD,
+     .		  SYSHPMPE,
+     .		  SYSPRIMEPRIMOS,
+     .		  SYSIBMAIX,
+     .		  SYSIBMMVS,
+     .		  SYSCRAYUNICOS,
+     .		  SYSSGIIRX,
+     .		  SYSDGUX,
+     .		  SYSOTHERMSC
+
+c Number of systems defined
+	PARAMETER (NMRSYSTEMS      = 13,	
+c Power Node UTX system
+     .		   SYSPNUTX       = 0,	
+c Sun BSD system
+     .		   SYSSUNBSD      = 1,	
+c VAX Ultrix system
+     .		   SYSVAXULT      = 2,	
+c VAX/VMS system
+     .		   SYSVAXVMS      = 3,	
+c IEEE standard (ref 754)
+     .		   SYSIEEESTD     = 4,	
+c Hewlert Packard system
+     .		   SYSHPMPE       = 5,	
+c Prime Primos system
+     .		   SYSPRIMEPRIMOS = 6,	
+c IBM AIX system
+     .		   SYSIBMAIX      = 7,	
+c IBM MVS system
+     .		   SYSIBMMVS      = 8,	
+c Cray Unicos system
+     .		   SYSCRAYUNICOS  = 9,	
+c Silicon Graphics system
+     .		   SYSSGIIRX      = 10,
+c Data General system
+     .		   SYSDGUX        = 11,
+c Other misc. systems
+     .		   SYSOTHERMSC    = 12)	
+
+
+c  Strings for the same systems as above
+	CHARACTER*10 UTX
+	CHARACTER*7  BSD
+	CHARACTER*7  VMS
+	CHARACTER*7  ULT
+	CHARACTER*8  IEEE
+	CHARACTER*6  HP
+	CHARACTER*12 PRIMOS
+	CHARACTER*7  AIX
+	CHARACTER*7  MVS
+	CHARACTER*11 UNICOS
+	CHARACTER*7  IRX
+	CHARACTER*5  DGUX
+	CHARACTER*9  MSC
+
+	PARAMETER (UTX    = 'pn9050-utx',
+     .		   BSD    = 'sun-bsd',
+     .		   VMS    = 'vax-vms',
+     .		   ULT    = 'vax-ult',
+     .		   IEEE   = 'ieee-std',
+     .		   HP     = 'hp-mpe',
+     .		   PRIMOS = 'prime-primos',
+     .		   AIX    = 'ibm-aix',
+     .		   MVS    = 'ibm-mvs',
+     .		   UNICOS = 'cray-unicos',
+     .		   IRX    = 'sgi-irx',
+     .		   DGUX  = 'dg-ux',
+     .		   MSC    = 'other-msc')
+
+
+c  Underflow and Overflow flags
+	INTEGER*4 SYSERR,
+     .		  SYSET,
+     .		  SYSUSE
+
+c Error on underflow and overflow
+	PARAMETER(SYSERR = 0,	
+c Set to min/max for system
+     .		  SYSET = 1,	
+c Use specified underflow & overflow
+     .		  SYSUSE = 2)	
+
+
+c  System code conversions
+	INTEGER*4 SETN,
+     .		  SETS
+
+c Convert sys string to sys numerical code
+	PARAMETER(SETN = 0,	
+cConvert sys numerical code to sys string
+     .		  SETS = 1) 	

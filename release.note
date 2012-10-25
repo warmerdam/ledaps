@@ -1,0 +1,38 @@
+updates on September 25, 2012
+- updated the metadata tags to work with the newly released LPGS metadata as well as continuing to support the old metadata tags
+
+updates on January 18, 2012
+- fixed bugs in parser program (lndpm.c) while reading metadata file for 
+  1) extracting solar zenith angle, 
+  2) writing the UTM zone into the ENVI hdr file, and 
+  3) dealing with Landsat-4 TM
+
+updates on Septmber 19, 2011
+- changes from Eric on the improved processing for the bright surfaces 
+- dynamic memory allocation for "lndapp" program so it can handle arbitrary number of columns
+
+updates on January 10, 2011
+- changed DEM data from "tbase.bin" (binary) to "CMGDEM.hdf" (HDF format)
+- used sea level pressure instead of surface pressure
+- updated REANALYSIS ancillary data (using sea level pressure)
+- updated ancillary data set up to 2010 
+
+updates on October 15, 2010
+- included the internal surface reflectance based cloud mask detection modules 
+  (lndsrbm)in this release
+- appended thermal brightness temperature (lndth) to surface reflectance file (lndsr)
+  using lndapp program
+- added DEM_FILE definition in the parser program and included global DEM data 
+  "tbase.bin" in ancillary data directory (require downloading new ancillary data)
+- updated ancillary data set until September 2010
+- removed "MTL" from output filename if it exists 
+- moved "bin" directory one level up (same level as src and doc) and revised 
+  installation script (env.sh) 
+- made "6S" modules (DISCOM.f, OS.f, and INTERP.f) to compatible in g95 compiler 
+  (g77 in past), now both 6S modules and lndsrbm cloud mask Fortran code 
+  can be compiled in g95 
+- added new script "do_ledaps.csh" to run all Ledaps modules automatically like
+  do_ledaps.csh <Landsat_Meta_File>
+- used actual LMIN, LMAX, QCALMIN and QCALMAX values for ETM+ L1T data (LPGS) 
+  if they exist, otherwise still use HIGH/LOW gain settings  
+

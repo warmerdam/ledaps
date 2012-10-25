@@ -1,0 +1,28 @@
+9/28/2009   Feng Gao
+1. removed production date rule in determining recalibration for TM data.
+2. recalibration is now determined by RE_CAL flag (in lndcal*.txt) only 
+   (default = flase)
+3. load gnew and gold data only if RE_CAL=true (or yes) 
+
+4/28/2009   Feng Gao
+1. fixed bugs that caused incompatible problems across different C compilers 
+   for lndcal and lndsr (some variables need to be initilized first)
+2. compiled and tested in 64-bit Linux system under 32-bit mode
+
+4/17/2009   Feng Gao
+1. fixed a bug in processing pixel with one or more band is missing 
+   (uses fill value for all bands if one is missing) 
+2. revised Makefile and forces code to be compiled in 32-bit (-m32) 
+3. fixed a bug in using zero array in space.c 
+   (can't be compiled for some compilers)
+
+3/25/09     Feng Gao
+1. received original "lndcal" ledaps version from TK Lim and revised
+   this version into two modes: public and ledaps
+2. added option for re-calibration in "lndcal" input file
+   do not run re-calibration (public mode) if RE_CAL="NO" or RE_CAL="FALSE"
+   run re-calibration (default or ledaps mode) if RE_CAL="YES" or RE_CAL="TRUE"
+3. added processing on saturated pixels (use 20000 as saturateValue)
+4. used gain and bias from metedata as input for all sensors (MSS, TM, ETM+)
+   under public mode (RE_CAL="NO"), otherwise run in ledaps mode as default.
+

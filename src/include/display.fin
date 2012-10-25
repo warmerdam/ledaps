@@ -1,0 +1,8 @@
+
+	integer	ALLCAT , ONECAT , GEN1 , GEN2
+	parameter (
+     .		ALLCAT  =  0,
+     .		ONECAT  =  1,
+     .          GEN1    =  2,
+     .		GEN2	=  3
+     .		  )
