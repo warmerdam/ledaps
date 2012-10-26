@@ -1,0 +1,8 @@
+*.TIF
+*.txt
+*.GTF
+*.hdf
+*.hdr
+*.log
+LogReport
+b6clouds200.temp.file
