@@ -74,6 +74,7 @@ void csalbr(float *tau_ray,float *actual_S_r);
 int update_atmos_coefs(atmos_t *atmos_coef,Ar_gridcell_t *ar_gridcell, sixs_tables_t *sixs_tables,int ***line_ar,Lut_t *lut,int nband, int bkgd_aerosol);
 int update_gridcell_atmos_coefs(int irow,int icol,atmos_t *atmos_coef,Ar_gridcell_t *ar_gridcell, sixs_tables_t *sixs_tables,int **line_ar,Lut_t *lut,int nband, int bkgd_aerosol);
 void set_sixs_path_from(const char *path);
+void report_timer(const char *stage);
 
 #ifdef SAVE_6S_RESULTS
 #define SIXS_RESULTS_FILENAME "SIXS_RUN_RESULTS.TXT"
@@ -190,12 +191,12 @@ int main (int argc, const char **argv) {
     float get_dem_spres(short *dem,float lat,float lon);
     void swapbytes(void *val,int nbbytes);
 
-
-
     debug_flag= DEBUG_FLAG;
 
     no_ozone_file=0;
   
+    report_timer( "Start" );
+
     set_sixs_path_from(argv[0]);
 
     param = GetParam(argc, argv);
@@ -502,6 +503,9 @@ int main (int argc, const char **argv) {
         sr_stats.nout_range[ib] = 0;
         sr_stats.first[ib] = true;
     }
+
+    report_timer( "After Allocations" );
+
 /****
      Get center lat lon and deviation from true north
 ****/
@@ -693,6 +697,7 @@ int main (int argc, const char **argv) {
 
     printf("True North adjustment = %f\n",adjust_north);
 
+    report_timer( "After Loading Ancillary Data" );
 
 /****
      Recompute solar geometry
@@ -782,6 +787,8 @@ int main (int argc, const char **argv) {
         printf( "Using existing 6S tables from '%s'.\n", SIXS_RESULTS_FILENAME );
     }
 
+    report_timer( "6s Complete" );
+
 /***
     interpolate ancillary data for AR grid cells
 ***/
@@ -858,6 +865,7 @@ int main (int argc, const char **argv) {
                     ar_gridcell.spres[il_ar*lut->ar_size.s+is_ar]=ar_gridcell.spres_dem[il_ar*lut->ar_size.s+is_ar]*ar_gridcell.spres[il_ar*lut->ar_size.s+is_ar]/1013.;
     }
 
+    report_timer( "AR Ancillary Interpolation Complete" );
 
 /* Compute atmospheric coefs for the whole scene with aot550=0.01 for use in internal cloud screening : NAZMI */
     nbpts=lut->ar_size.l*lut->ar_size.s;
@@ -869,6 +877,8 @@ int main (int argc, const char **argv) {
 
     printf("Compute Atmos Params with aot550=0.01\n"); fflush(stdout);
     update_atmos_coefs(&atmos_coef,&ar_gridcell, &sixs_tables,line_ar, lut,input->nband, 1);
+
+    report_timer( "AR Computation Complete" );
 
     /* Read input first time and compute clear pixels stats for internal cloud screening */
 
@@ -978,6 +988,9 @@ int main (int argc, const char **argv) {
 	fclose(fd_cld_diags);
 #endif
     }
+
+    report_timer( "Cloud Pass Complete" );
+
 /***
     Create dark target temporary file
 ***/
@@ -1062,10 +1075,15 @@ int main (int argc, const char **argv) {
 	for (i=0;i<lut->ar_region_size.l;i++)
             memset(&ptr_rot_cld[2][i][0],0,input->size.s);
     }
+
+    report_timer( "Cloud Shadow Pass Complete" );
+
 /** Last Block */
     dilate_shadow_mask(lut, input->size.s, ptr_rot_cld, 5);
     if (fwrite(ptr_rot_cld[0][0],lut->ar_region_size.l*input->size.s,1,fdtmp)!=1) ERROR("writing dark target to temporary file", "main");
     fclose(fdtmp);
+
+    report_timer( "Cloud Shadow Mask Complete" );
 
 
 /***
@@ -1142,6 +1160,9 @@ int main (int argc, const char **argv) {
 #ifdef DEBUG_AR
     fclose(fd_ar_diags);
 #endif
+
+    report_timer( "Cloud Shadow Mask Complete" );
+
     /***
 	Fill Gaps in the coarse resolution aerosol product for bands 1(0), 2(1) and 3(2)
     **/
@@ -1164,6 +1185,8 @@ int main (int argc, const char **argv) {
 /*        printf("WARNING NO AEROSOL CORRECTION TEST MODE");
           update_atmos_coefs(&atmos_coef,&ar_gridcell, &sixs_tables,line_ar, lut,input->nband, 1); */
 #endif
+
+    report_timer( "update_atmos_coefs() Complete" );
 
     /* Re-read input and compute surface reflectance */
 
@@ -1305,6 +1328,8 @@ int main (int argc, const char **argv) {
     fclose(fdtmp);
     unlink(tmpfilename); 
 	
+    report_timer( "Main data pass Complete" );
+
     /* Print the statistics */
 
     printf(" total pixels %ld\n", ((long)input->size.l * (long)input->size.s));
@@ -1400,6 +1425,7 @@ int main (int argc, const char **argv) {
     if (!FreeParam(param)) 
         ERROR("freeing parameter stucture", "main");
 
+    report_timer( "Program Complete" );
 
     /* All done */
 
@@ -1858,3 +1884,20 @@ char *get_sixs_path()
     return &sixs_path[0];
 }
 
+void report_timer(const char *stage) {
+    static time_t start_time = 0; 
+    static time_t last_time = 0;
+
+    time_t this_time = time(NULL);
+
+    if (start_time == 0) {
+        start_time = last_time = this_time;
+    }
+
+    printf( "\nTIMER / %s / %ds / %ds / %s\n", 
+            stage, 
+            this_time - last_time, 
+            this_time - start_time,
+            ctime(&this_time) );
+    last_time = this_time;
+}
