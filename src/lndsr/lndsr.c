@@ -706,33 +706,35 @@ int main (int argc, const char **argv) {
   printf("Center: %d %f %f %f %f %f\n",input->meta.acq_date.doy,scene_gmt,center_lat,center_lon,input->meta.sun_zen*DEG,input->meta.sun_az*DEG);
 */	
 
+    int need_6S_results = 1;
+
 #ifdef SAVE_6S_RESULTS
-    if (read_6S_results_from_file(SIXS_RESULTS_FILENAME,&sixs_tables)) {
+    need_6S_results = read_6S_results_from_file(SIXS_RESULTS_FILENAME,&sixs_tables);
 #endif
 /****
      Run 6S and compute atmcor params
 ****/
-   	interpol_spatial_anc(&anc_WV,center_lat,center_lon,tmpflt_arr);
-   	tmpint=(int)(scene_gmt/anc_WV.timeres);
-   	if (tmpint>=(anc_WV.nblayers-1))
-            tmpint=anc_WV.nblayers-2;
-   	coef=(double)(scene_gmt-anc_WV.time[tmpint])/anc_WV.timeres;
-   	sixs_tables.uwv=(1.-coef)*tmpflt_arr[tmpint]+coef*tmpflt_arr[tmpint+1];
+    interpol_spatial_anc(&anc_WV,center_lat,center_lon,tmpflt_arr);
+    tmpint=(int)(scene_gmt/anc_WV.timeres);
+    if (tmpint>=(anc_WV.nblayers-1))
+        tmpint=anc_WV.nblayers-2;
+    coef=(double)(scene_gmt-anc_WV.time[tmpint])/anc_WV.timeres;
+    sixs_tables.uwv=(1.-coef)*tmpflt_arr[tmpint]+coef*tmpflt_arr[tmpint+1];
 
-   	if (!no_ozone_file) {
-            interpol_spatial_anc(&anc_O3,center_lat,center_lon,tmpflt_arr);
-            tmpint=(int)(scene_gmt/anc_O3.timeres);
-            if ( anc_O3.nblayers> 1 ){
-      		if (tmpint>=(anc_O3.nblayers-1))tmpint=anc_O3.nblayers-2;
-                coef=(double)(scene_gmt-anc_O3.time[tmpint])/anc_O3.timeres;
-    		sixs_tables.uoz=(1.-coef)*tmpflt_arr[tmpint]+coef*tmpflt_arr[tmpint+1];
-            } else {
-    	  	sixs_tables.uoz=tmpflt_arr[tmpint];
-            }
-   	} else {
-            jday=(short)input->meta.acq_date.doy;    	  
-            sixs_tables.uoz=calcuoz(jday,(float)center_lat);
-   	}
+    if (!no_ozone_file) {
+        interpol_spatial_anc(&anc_O3,center_lat,center_lon,tmpflt_arr);
+        tmpint=(int)(scene_gmt/anc_O3.timeres);
+        if ( anc_O3.nblayers> 1 ){
+            if (tmpint>=(anc_O3.nblayers-1))tmpint=anc_O3.nblayers-2;
+            coef=(double)(scene_gmt-anc_O3.time[tmpint])/anc_O3.timeres;
+            sixs_tables.uoz=(1.-coef)*tmpflt_arr[tmpint]+coef*tmpflt_arr[tmpint+1];
+        } else {
+            sixs_tables.uoz=tmpflt_arr[tmpint];
+        }
+    } else {
+        jday=(short)input->meta.acq_date.doy;    	  
+        sixs_tables.uoz=calcuoz(jday,(float)center_lat);
+    }
 /***
     interpol_spatial_anc(&anc_SP,center_lat,center_lon,tmpflt_arr);
     tmpint=(int)(scene_gmt/anc_SP.timeres);
@@ -743,13 +745,13 @@ int main (int argc, const char **argv) {
     sixs_tables.target_alt=(1013.-tmpflt)/-100.; / * target altitude in km (negative=above ground)* /
 ***/
 
-	sixs_tables.target_alt=0.; /* target altitude in km (sea level) */
-	sixs_tables.sza=input->meta.sun_zen*DEG;
-	sixs_tables.phi=input->meta.sun_az*DEG;
-	sixs_tables.vza=0.;
-	sixs_tables.month=9;
-	sixs_tables.day=15;
-	sixs_tables.srefl=0.14;
+    sixs_tables.target_alt=0.; /* target altitude in km (sea level) */
+    sixs_tables.sza=input->meta.sun_zen*DEG;
+    sixs_tables.phi=input->meta.sun_az*DEG;
+    sixs_tables.vza=0.;
+    sixs_tables.month=9;
+    sixs_tables.day=15;
+    sixs_tables.srefl=0.14;
 
 
 /*
@@ -758,21 +760,28 @@ int main (int argc, const char **argv) {
   sixs_tables.uoz,tmpflt,sixs_tables.uwv);
 
 */
-	switch (input->meta.inst) {
-          case INST_TM:
-            sixs_tables.Inst=SIXS_INST_TM;
-            break;
-          case INST_ETM:
-            sixs_tables.Inst=SIXS_INST_ETM;
-            break;
-          default:
-            ERROR("Unknown Instrument", "main");
-	}
-	create_6S_tables(&sixs_tables);
-#ifdef SAVE_6S_RESULTS
-	write_6S_results_to_file(SIXS_RESULTS_FILENAME,&sixs_tables);
+    switch (input->meta.inst) {
+      case INST_TM:
+        sixs_tables.Inst=SIXS_INST_TM;
+        break;
+      case INST_ETM:
+        sixs_tables.Inst=SIXS_INST_ETM;
+        break;
+      default:
+        ERROR("Unknown Instrument", "main");
     }
+
+    if (need_6S_results) {
+        printf( "Computing 6S Tables...\n" );
+        create_6S_tables(&sixs_tables);
+#ifdef SAVE_6S_RESULTS
+        write_6S_results_to_file(SIXS_RESULTS_FILENAME,&sixs_tables);
 #endif
+    } else {
+        read_6S_results_from_file(SIXS_RESULTS_FILENAME,&sixs_tables);
+        printf( "Using existing 6S tables from '%s'.\n", SIXS_RESULTS_FILENAME );
+    }
+
 /***
     interpolate ancillary data for AR grid cells
 ***/

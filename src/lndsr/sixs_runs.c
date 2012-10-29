@@ -837,6 +837,7 @@ int read_6S_results_from_file(char *filename,sixs_tables_t *sixs_tables) {
 				run_sixs=1;
 	}
 	fclose(fd);
+        write_6S_results_to_file("SIXS_CHECK.TXT", sixs_tables);
 	return run_sixs;
 	
 }
@@ -848,16 +849,16 @@ int write_6S_results_to_file(char *filename,sixs_tables_t *sixs_tables) {
 	if ((fd=fopen(filename,"w"))==NULL)
 		return -1;
 	fprintf(fd,"%02d %03d\n",sixs_tables->month,sixs_tables->day);
-	fprintf(fd,"%010.6f\n",sixs_tables->srefl);
-	fprintf(fd,"%010.6f %010.6f %010.6f\n",sixs_tables->sza,sixs_tables->vza,sixs_tables->phi);
-	fprintf(fd,"%010.6f %010.6f %010.2f\n",sixs_tables->uwv,sixs_tables->uoz,sixs_tables->target_alt);
+	fprintf(fd,"%.16g\n",sixs_tables->srefl);
+	fprintf(fd,"%.16g %.16g %.16g\n",sixs_tables->sza,sixs_tables->vza,sixs_tables->phi);
+	fprintf(fd,"%.16g %.16g %.16g\n",sixs_tables->uwv,sixs_tables->uoz,sixs_tables->target_alt);
 	for (i=0;i<SIXS_NB_AOT;i++)
-		fprintf(fd,"%07.4f ",sixs_tables->aot[i]);
+		fprintf(fd,"%.16g ",sixs_tables->aot[i]);
 	fprintf(fd,"\n");
 	for (i=0;i<SIXS_NB_BANDS;i++) {
-		fprintf(fd,"%010.6f %010.6f %010.6f %010.6f %010.6f %010.6f %010.6f\n",sixs_tables->S_r[i],sixs_tables->T_r_up[i],sixs_tables->T_r_down[i],sixs_tables->T_r[i],sixs_tables->T_g_wv[i],sixs_tables->T_g_og[i],sixs_tables->rho_r[i]);
+		fprintf(fd,"%.16g %.16g %.16g %.16g %.16g %.16g %.16g\n",sixs_tables->S_r[i],sixs_tables->T_r_up[i],sixs_tables->T_r_down[i],sixs_tables->T_r[i],sixs_tables->T_g_wv[i],sixs_tables->T_g_og[i],sixs_tables->rho_r[i]);
 			for (j=0;j<SIXS_NB_AOT;j++)
-				fprintf(fd,"%07.4f %010.6f %010.6f %010.6f %010.6f %010.6f %010.6f %010.6f %010.6f %010.6f %010.6f\n",sixs_tables->aot_wavelength[i][j],sixs_tables->T_a_up[i][j],sixs_tables->T_a_down[i][j],sixs_tables->T_a[i][j],sixs_tables->rho_ra[i][j],sixs_tables->rho_a[i][j],sixs_tables->S_ra[i][j],sixs_tables->T_ra_up[i][j],sixs_tables->T_ra_down[i][j],sixs_tables->T_ra[i][j],sixs_tables->rho_toa[i][j]);
+				fprintf(fd,"%.16g %.16g %.16g %.16g %.16g %.16g %.16g %.16g %.16g %.16g %.16g\n",sixs_tables->aot_wavelength[i][j],sixs_tables->T_a_up[i][j],sixs_tables->T_a_down[i][j],sixs_tables->T_a[i][j],sixs_tables->rho_ra[i][j],sixs_tables->rho_a[i][j],sixs_tables->S_ra[i][j],sixs_tables->T_ra_up[i][j],sixs_tables->T_ra_down[i][j],sixs_tables->T_ra[i][j],sixs_tables->rho_toa[i][j]);
 	}
 	fclose(fd);
 	return 0;
