@@ -9,8 +9,11 @@ char* format_deg2dms(const double deg, char* dms, const char delim_in)
 {
   double fdeg, fmin, fsec, frac;
   int    ideg, imin, isec, irac, sign;
-  char* delim=":";
-  memcpy(delim,&delim_in,1);
+  char   delim[2];
+
+  delim[0] = delim_in;
+  delim[1] = '\0';
+
   sign= deg<0 ? -1 : 1;
   fdeg= deg*(double)sign;
   ideg= (int)fdeg;
