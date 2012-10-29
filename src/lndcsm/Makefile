@@ -1,25 +1,7 @@
-SYSTEM  = IRIS4
-#EXTRA	= -D$(SYSTEM) -lfastm
-#EXTRA   = -D_BSD_SOURCE -Wall
-EXTRA   = -m32 -D_BSD_SOURCE
+include ../Makefile.opt
 
-INCDIR  = -I. -I$(TIFFINC) -I$(GEOTIFF_INC) -I$(HDFINC) -I$(HDFEOS_INC)
-###INCDIR  = -I. -I$(HDFINC) -I$(HDFEOS_INC) -I$(TIFFINC) -I$(GEOTIFF_INC)
-#NCFLAGS  = -mips3 -xansi -fullwarn -r10000 -g $(EXTRA) $(INCDIR)
-#NCFLAGS  = $(CFLAGS) -r10000 -g $(EXTRA) $(INCDIR)
-#NCFLAGS  = $(CFLAGS) -r10000 -O3 $(EXTRA) $(INCDIR)
-#NCFLAGS  = $(CFLAGS) -g $(EXTRA) $(INCDIR)
-#NCFLAGS  = $(CFLAGS) -O3 $(EXTRA) $(INCDIR)
-#NCFLAGS  = $(CFLAGS) -O3  -DIRIS4 $(INCDIR)
-NCFLAGS  = $(CFLAGS) -g $(INCDIR)
-
-#EXLIB   = -lmalloc_ss
-EXLIB	= -L$(GEOTIFF_LIB) -lgeotiff \
-          -L$(TIFFLIB) -ltiff \
-          -L$(HDFEOS_LIB) -lhdfeos -lgctp \
-          -L$(HDFLIB) -lmfhdf -ldf -ljpeg -lz
-MATHLIB = -lm
-LOADLIB = $(EXLIB) $(MATHLIB)
+NCFLAGS  = $(CFLAGS) $(LAC_FLAGS) $(INCDIR)
+LIBS 	=	$(HDFLIB) $(BASELIB) 
 
 TARGET1 = lndcsm
 OBJ1    = lndcsm.o param.o input.o lut.o output.o csm.o space.o \
@@ -36,17 +18,17 @@ x: $(TARGET1)
 $(OBJ1): $(INC1)
 
 $(TARGET1): $(OBJ1)
-	$(CC) $(EXTRA) -o $(TARGET1) $(OBJ1) $(LOADLIB)
+	$(CC) $(NCFLAGS) -o $(TARGET1) $(OBJ1) $(LIBS)
 #	/usr/pure/purify -m71-engine $(CC) -o $(TARGET1) $(OBJ1) $(LOADLIB) 
 
 clean:
 	rm -f *.o $(TARGET1)
 
-install:
+install:	$(TARGET1)
 	cp $(TARGET1) $(BIN)
 
 #
 # Rules
 #
 .c.o:
-	$(CC) $(EXTRA) $(NCFLAGS) -c $< -o $@
+	$(CC) $(NCFLAGS) -c $< -o $@

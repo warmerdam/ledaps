@@ -1,0 +1,11 @@
+
+INCDIR  = -I. -I../include
+HDFLIB	= -L../lib -lhdfeos -lgctp -lmfhdf -ldf
+TIFFLIB	= -L../lib -lgeotiff -ltiff
+BASELIB = -lz -ljpeg -lm
+
+LAC_FLAGS =	-O -m32 -DLINUX -D_BSD_SOURCE
+LAF_FLAGS = 	-O -m32 
+
+BIN	 =	../../bin
+

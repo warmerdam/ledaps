@@ -5,13 +5,13 @@
 #
 ##!END
 #############################################################################
-EXTRA  = -m32 -D_BSD_SOURCE
+
+include ../Makefile.opt
 
 TARGET = lndpm
 
-INC = -I. -I$(TIFFINC) -I$(GEOTIFF_INC)
-
-LIB = -L$(GEOTIFF_LIB) -lgeotiff -L$(TIFFLIB) -ltiff -lm
+NCFLAGS  = $(CFLAGS) $(LAC_FLAGS) $(INCDIR)
+LIBS = $(HDFLIB) $(TIFFLIB) $(BASELIB)
 
 OBJ =  lndpm.c
 
@@ -19,12 +19,12 @@ all: $(TARGET)
 
 # Make the program
 $(TARGET) : $(OBJ)
-	$(CC) $(EXTRA) $(INC) $(OBJ) $(LIB)  -o $@
+	$(CC) $(NCFLAGS) $(OBJ) $(LIBS)  -o $@
 
 clean:
 	rm -f *.o $(TARGET)
 
-install:
+install:	$(TARGET)
 	cp $(TARGET) $(BIN)
 
 #******************* End of make file *******************************

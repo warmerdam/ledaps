@@ -1,20 +1,7 @@
-SYSTEM  = IRIS4
-#EXTRA	= -D$(SYSTEM) -lfastm
-#EXTRA   = -DLINUX -D_BSD_SOURCE -Wall
-EXTRA   = -DLINUX -D_BSD_SOURCE -m32
+include ../Makefile.opt
 
-INCDIR  = -I. -I$(HDFINC) -I$(HDFEOS_INC) -I$(TIFFINC) -I$(GEOTIFF_INC)
-#NCFLAGS  = -mips3 -xansi -fullwarn -r10000 -g $(EXTRA) $(INCDIR)
-#NCFLAGS  = $(CFLAGS) -r10000 -g $(EXTRA) $(INCDIR)
-#NCFLAGS  = $(CFLAGS) -r10000 -O3 $(EXTRA) $(INCDIR)
-NCFLAGS  = $(CFLAGS) -O $(EXTRA) $(INCDIR)
-#NCFLAGS  = $(CFLAGS) $(EXTRA) $(INCDIR)
-
-#EXLIB   = -lmalloc_ss
-EXLIB	= -L$(HDFEOS_LIB) -lhdfeos -lgctp \
-          -L$(HDFLIB) -lmfhdf -ldf -lz -ljpeg
-MATHLIB = -lm
-LOADLIB = $(EXLIB) $(MATHLIB)
+NCFLAGS  = $(CFLAGS) $(LAC_FLAGS) $(INCDIR)
+LIBS = $(EXLIB) $(MATHLIB)
 
 TARGET1	= lndsr
 #EXTTARGET = sixsV1.0B
@@ -34,8 +21,8 @@ x: $(TARGET1)
 $(OBJ1): $(INC1)
 
 $(TARGET1): $(OBJ1)
-	$(CC) $(EXTRA) -o $(TARGET1) $(OBJ1) $(LOADLIB)
-#	/usr/pure/purify -m71-engine $(CC) -o $(TARGET1) $(OBJ1) $(LOADLIB) 
+	$(CC) $(NCFLAGS) -o $(TARGET1) $(OBJ1) $(LIBS)
+#	/usr/pure/purify -m71-engine $(CC) -o $(TARGET1) $(OBJ1) $(LIBS) 
 
 clean:
 	rm -f *.o $(TARGET1)
@@ -48,6 +35,6 @@ install:
 # Rules
 #
 .c.o:
-	$(CC) $(EXTRA) $(NCFLAGS) -c $< -o $@
+	$(CC) $(NCFLAGS) -c $< -o $@
 .f.o:
-	gfortran -m32 -c $< -o $@
+	gfortran $(LAF_FLAGS) -c $< -o $@
