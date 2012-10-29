@@ -76,12 +76,16 @@ def compare_image_pixels(golden_band, new_band, id):
   for line in range(golden_band.YSize):
     golden_line = golden_band.ReadAsArray(0, line, golden_band.XSize, 1)[0]
     new_line = new_band.ReadAsArray(0, line, golden_band.XSize, 1)[0]
-    for pixel in range(golden_band.XSize):
-      diff = new_line[pixel] - golden_line[pixel]
-      if diff != 0:
-        diff_count += 1
-        if abs(diff) > max_diff:
-          max_diff = abs(diff)
+    diff_line = golden_line - new_line
+    max_diff = max(max_diff,abs(diff_line).max())
+    diff_count += len(diff_line.nonzero()[0])
+    
+#    for pixel in range(golden_band.XSize):
+#      diff = new_line[pixel] - golden_line[pixel]
+#      if diff != 0:
+#        diff_count += 1
+#        if abs(diff) > max_diff:
+#          max_diff = abs(diff)
 
   print '  Pixels Differing:', diff_count
   print '  Maximum Pixel Difference: ', max_diff
@@ -108,10 +112,12 @@ def compare_band(golden_band, new_band, id):
     print '  New:   ', gdal.GetColorInterpretationName(new_band.GetColorInterpretation())
     found_diff += 1
 
-  if golden_band.Checksum() != new_band.Checksum():
+  golden_checksum = golden_band.Checksum()
+  new_checksum = new_band.Checksum()
+  if golden_checksum != new_checksum:
     print 'Band %s checksum difference:' % id
-    print '  Golden:', golden_band.Checksum()
-    print '  New:   ', new_band.Checksum()
+    print '  Golden:', golden_checksum
+    print '  New:   ', new_checksum
     found_diff += 1
     compare_image_pixels(golden_band,new_band, id)
 
