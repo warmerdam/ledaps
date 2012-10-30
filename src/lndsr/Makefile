@@ -1,7 +1,7 @@
 include ../Makefile.opt
 
 NCFLAGS  = $(CFLAGS) $(LAC_FLAGS) $(INCDIR)
-LIBS = $(EXLIB) $(MATHLIB)
+LIBS = $(HDFLIB) $(BASELIB)
 
 TARGET1	= lndsr
 #EXTTARGET = sixsV1.0B
@@ -18,7 +18,7 @@ all: $(TARGET1)
 
 x: $(TARGET1)
 
-$(OBJ1): $(INC1)
+$(OBJ1): $(INC1) Makefile ../Makefile.opt
 
 $(TARGET1): $(OBJ1)
 	$(CC) $(NCFLAGS) -o $(TARGET1) $(OBJ1) $(LIBS)
@@ -27,7 +27,7 @@ $(TARGET1): $(OBJ1)
 clean:
 	rm -f *.o $(TARGET1)
 
-install:
+install: $(TARGET1)
 	cp $(TARGET1) $(BIN)
 #	cp $(EXTTARGET) $(BIN)
 
