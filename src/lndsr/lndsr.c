@@ -4,6 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <math.h>
+#include <time.h>
 
 #include "lndsr.h"
 #include "keyvalue.h"
@@ -162,7 +163,6 @@ int main (int argc, const char **argv) {
     float center_lat,center_lon;
     float aot550;
 	
-    char *charptr,tmpfilename[128];
     FILE *fdtmp,*fdtmp2;
 	
     short *dem_array;
@@ -629,8 +629,9 @@ int main (int argc, const char **argv) {
     sds_id= SDselect(sds_file_id,sds_index);
     status=  SDgetinfo(sds_id, sds_name, &rank, dim_sizes, &data_type,&n_attrs);
     printf("the name of the sds is %s\n",sds_name);
-    printf("the rank of the sds is %d\n",rank);
-    printf("the dimension of the sds is %d %d\n",dim_sizes[0],dim_sizes[1]);
+    printf("the rank of the sds is %d\n",(int) rank);
+    printf("the dimension of the sds is %d %d\n",
+           (int)dim_sizes[0], (int)dim_sizes[1]);
     start[0]=0;
     start[1]=0;
     edges[0]=3600;
@@ -639,7 +640,7 @@ int main (int argc, const char **argv) {
     stride[1]=1;
     dem_array=(short *)malloc(DEM_NBLAT*DEM_NBLON*sizeof(short));
     status=SDreaddata(sds_id,start, stride, edges,dem_array);	   
-    printf("the status of the read is %d\n",status);
+    printf("the status of the read is %d\n", (int)status);
     if (status != 0 ) {
         printf("Fatal error DEM file not read\n");
         exit(EXIT_FAILURE);
@@ -927,6 +928,9 @@ int main (int argc, const char **argv) {
       		ERROR("running cloud detection pass 1", "main");
 
     }
+
+    report_timer( "Cloud Detection Pass 1 Complete" );
+
     if (param->thermal_band) {
 	for (il=0;il<cld_diags.nbrows;il++) {
             tmpint=(int)(scene_gmt/anc_ATEMP.timeres);
@@ -989,16 +993,13 @@ int main (int argc, const char **argv) {
 #endif
     }
 
-    report_timer( "Cloud Pass Complete" );
+    report_timer( "Thermal Cloud Diag Complete" );
 
 /***
     Create dark target temporary file
 ***/
-    charptr=tempnam(".","temporary_dark_target");
-    if (charptr == NULL) ERROR("getting dark target temporary filename", "main");
-    strcpy(tmpfilename,charptr);
-    if ((fdtmp=fopen(tmpfilename,"w"))==NULL) ERROR("creating dark target temporary file", "main");
-
+    if ((fdtmp=tmpfile())==NULL) ERROR("creating dark target temporary file", "main");
+    
     /* Read input second time and create cloud and cloud shadow masks */
     ptr_rot_cld[0]=rot_cld[0];
     ptr_rot_cld[1]=rot_cld[1];
@@ -1081,15 +1082,15 @@ int main (int argc, const char **argv) {
 /** Last Block */
     dilate_shadow_mask(lut, input->size.s, ptr_rot_cld, 5);
     if (fwrite(ptr_rot_cld[0][0],lut->ar_region_size.l*input->size.s,1,fdtmp)!=1) ERROR("writing dark target to temporary file", "main");
-    fclose(fdtmp);
+    fflush(fdtmp);
 
     report_timer( "Cloud Shadow Mask Complete" );
 
 
 /***
-    Open temporary file for read and write
+    Start back at the beginning of the temporary file.
 ***/
-    if ((fdtmp=fopen(tmpfilename,"r+"))==NULL) ERROR("opening dark target temporary file (r+)", "main");
+    fseek(fdtmp, 0, SEEK_SET);
 /*	
 	if ((fdtmp2=fopen("Temporary_AOT1_File.dat","w"))==NULL) ERROR("creating temporary aot1 file", "main");
 */
@@ -1153,7 +1154,6 @@ int main (int argc, const char **argv) {
 **/
     }
     printf("\n");
-    fclose(fdtmp);
 /**
    fclose(fdtmp2);
 **/
@@ -1191,9 +1191,9 @@ int main (int argc, const char **argv) {
     /* Re-read input and compute surface reflectance */
 
 /***
-    Open temporary file for read
+    Start at beginning of temp file again.
 ***/
-    if ((fdtmp=fopen(tmpfilename,"r"))==NULL) ERROR("opening dark target temporary file", "main");
+    fseek(fdtmp, 0, SEEK_SET);
 
     for (il = 0; il < input->size.l; il++) {
 	if (!(il%100)) 
@@ -1326,7 +1326,6 @@ int main (int argc, const char **argv) {
     }
     printf("\n");
     fclose(fdtmp);
-    unlink(tmpfilename); 
 	
     report_timer( "Main data pass Complete" );
 
@@ -1896,8 +1895,8 @@ void report_timer(const char *stage) {
 
     printf( "\nTIMER / %s / %ds / %ds / %s\n", 
             stage, 
-            this_time - last_time, 
-            this_time - start_time,
+            (int) (this_time - last_time), 
+            (int) (this_time - start_time),
             ctime(&this_time) );
     last_time = this_time;
 }
