@@ -1,6 +1,6 @@
 include ../Makefile.opt
 
-NCFLAGS  = $(CFLAGS) $(LAC_FLAGS) $(INCDIR)
+NCFLAGS  = $(CFLAGS) $(LAC_FLAGS) $(INCDIR) -DSAVE_6S_RESULTS
 LIBS = $(HDFLIB) $(BASELIB)
 
 TARGET1	= lndsr
