@@ -78,6 +78,14 @@ typedef struct {
 
 #endif
 
+/* Subwindow on bigger dataset */
+
+typedef struct {
+    Img_coord_int_t  offset;     /* offset to tile window */
+    Img_coord_int_t  size;       /* tile window size */
+    Img_coord_int_t  full_size;  /* full image size */
+} TileDef_t;
+
 /* Floating point image coordinates data structure */
 
 typedef struct {
@@ -149,6 +157,7 @@ bool FreeSpace(Space_t *this);
 bool GetSpaceDefFile(char *file_name, Space_def_t *this);
 bool PutSpaceDefHDF(Space_def_t *this, char *file_name, int nsds, 
                     char **sds_names, int *sds_types, char *grid_name);
-bool GetSpaceDefHDF(Space_def_t *this, char *file_name, char *grid_name);
+bool GetSpaceDefHDF(Space_def_t *this, char *file_name, char *grid_name,
+                    TileDef_t *tile);
  
 #endif

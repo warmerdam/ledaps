@@ -190,6 +190,7 @@ int main (int argc, const char **argv) {
     float calcuoz(short jday,float flat);
     float get_dem_spres(short *dem,float lat,float lon);
     void swapbytes(void *val,int nbbytes);
+    TileDef_t *tile_def = NULL;
 
     debug_flag= DEBUG_FLAG;
 
@@ -202,13 +203,27 @@ int main (int argc, const char **argv) {
     param = GetParam(argc, argv);
     if (param == (Param_t *)NULL) ERROR("getting runtime parameters", "main");
 
+    /* Manually define subtile to operate on */
+#if 0
+    {
+        static TileDef_t my_tile_def;
+
+        my_tile_def.offset.s = 2500;
+        my_tile_def.offset.l = 800;
+        my_tile_def.size.s = 700;
+        my_tile_def.size.l = 300;
+
+        tile_def = &my_tile_def;
+    }
+#endif
+
     /* Open input file */
 
-    input = OpenInput(param->input_file_name);
+    input = OpenInput(param->input_file_name, tile_def);
     if (input == (Input_t *)NULL) ERROR("bad input file", "main");
 
     if (param->thermal_band) {
-        input_b6 = OpenInput(param->temp_file_name);
+        input_b6 = OpenInput(param->temp_file_name, tile_def);
         if (input_b6 == (Input_t *)NULL) ERROR("bad band 6 input file", "main");
     }
 
@@ -265,7 +280,7 @@ int main (int argc, const char **argv) {
     /* Open input cloudmask */
 
     if ( param->cloud_flag ) {
-        input_mask = OpenInputMask(param->cloud_mask_file);
+        input_mask = OpenInputMask(param->cloud_mask_file, tile_def);
         if (input == (Input_t *)NULL) ERROR("bad input file", "main");
     }
 
@@ -275,7 +290,7 @@ int main (int argc, const char **argv) {
     if (lut == (Lut_t *)NULL) ERROR("bad lut file", "main");
   
     /* Get space definition */
-    if (!GetSpaceDefHDF(&space_def, param->input_file_name, grid_name))
+    if (!GetSpaceDefHDF(&space_def, param->input_file_name, grid_name, tile_def))
         ERROR("getting space metadata from HDF file", "main");
     /* Setup Space */
     space = SetupSpace(&space_def);

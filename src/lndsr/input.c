@@ -80,7 +80,7 @@
 
 /* Functions */
 
-Input_t *OpenInput(char *file_name)
+Input_t *OpenInput(char *file_name, TileDef_t *tile_def)
 /* 
 !C******************************************************************************
 
@@ -262,9 +262,20 @@ Input_t *OpenInput(char *file_name)
         break;
       }
     }
-
   }
 
+  /* Establish subtile definition if we are accessing a subtile */
+
+  this->tile_def.full_size = this->size;
+  if (tile_def != NULL) { /* use provided override */
+      this->tile_def.offset = tile_def->offset;
+      this->tile_def.size = tile_def->size;
+      this->size = this->tile_def.size;
+  } else { /* default to whole image */
+      this->tile_def.offset.s = 0;
+      this->tile_def.offset.l = 0;
+      this->tile_def.size = this->tile_def.full_size;
+  }
 
   if (read_qa) {
     strcpy(sds_name, "lndcal_QA");
@@ -300,10 +311,10 @@ Input_t *OpenInput(char *file_name)
 
     /* Save and check line and sample dimensions */
 
-     if (this->size.l != dim[0]->nval) {
+     if (this->tile_def.full_size.l != dim[0]->nval) {
        error_string = "all line dimensions do not match";
      }
-     if (this->size.s != dim[1]->nval) {
+     if (this->tile_def.full_size.s != dim[1]->nval) {
        error_string = "all sample dimensions do not match";
      }
     /* Allocate QA buffer */
@@ -359,7 +370,7 @@ Input_t *OpenInput(char *file_name)
   return this;
 }
 
-InputMask_t *OpenInputMask(char *file_name)
+InputMask_t *OpenInputMask(char *file_name, TileDef_t *tile_def)
 {
   InputMask_t *this;
   char *error_string = (char *)NULL;
@@ -433,10 +444,23 @@ InputMask_t *OpenInputMask(char *file_name)
     }
   }
 
-    /* Save and check line and sample dimensions */
+  /* Save and check line and sample dimensions */
+  
+  this->size.l = dim[0]->nval;
+  this->size.s = dim[1]->nval;
 
-    this->size.l = dim[0]->nval;
-    this->size.s = dim[1]->nval;
+  /* Establish subtile definition if we are accessing a subtile */
+
+  this->tile_def.full_size = this->size;
+  if (tile_def != NULL) { /* use provided override */
+      this->tile_def.offset = tile_def->offset;
+      this->tile_def.size = tile_def->size;
+      this->size = this->tile_def.size;
+  } else { /* default to whole image */
+      this->tile_def.offset.s = 0;
+      this->tile_def.offset.l = 0;
+      this->tile_def.size = this->tile_def.full_size;
+  }
 
   /* Allocate input buffer */
 
@@ -662,10 +686,10 @@ bool GetInputLine(Input_t *this, int iband, int iline, int *line)
 
   /* Read the data */
 
-  start[0] = iline;
-  start[1] = 0;
+  start[0] = iline + this->tile_def.offset.l;
+  start[1] = this->tile_def.offset.s;
   nval[0] = 1;
-  nval[1] = this->size.s;
+  nval[1] = this->tile_def.size.s;
 
   if (SDreaddata(this->sds[iband].id, start, NULL, nval, buf) == HDF_ERROR)
     RETURN_ERROR("reading input", "GetInputLine", false);
@@ -697,10 +721,10 @@ bool GetInputQALine(Input_t *this, int iline, int8 *line)
 
   /* Read the data */
 
-  start[0] = iline;
-  start[1] = 0;
+  start[0] = iline + this->tile_def.offset.l;
+  start[1] = this->tile_def.offset.s;
   nval[0] = 1;
-  nval[1] = this->size.s;
+  nval[1] = this->tile_def.size.s;
 
   if (SDreaddata(this->qa_sds.id, start, NULL, nval, buf) == HDF_ERROR)
     RETURN_ERROR("reading input", "GetInputLine", false);
@@ -730,11 +754,10 @@ bool GetInputMaskLine(InputMask_t *this, int iline, char *line)
 
   /* Read the data */
 
-  start[0] = iline;
-  start[1] = 0;
+  start[0] = iline + this->tile_def.offset.l;
+  start[1] = this->tile_def.offset.s;
   nval[0] = 1;
-  nval[1] = this->size.s;
-
+  nval[1] = this->tile_def.size.s;
 
   if (SDreaddata(this->sds[0].id, start, NULL, nval, buf) == HDF_ERROR)
     RETURN_ERROR("reading input", "GetInputMaskLine", false);

@@ -1230,7 +1230,8 @@ bool PutSpaceDefHDF(Space_def_t *this, char *file_name, int nsds,
   return true;
 }
 
-bool GetSpaceDefHDF(Space_def_t *this, char *file_name, char *grid_name) {
+bool GetSpaceDefHDF(Space_def_t *this, char *file_name, char *grid_name,
+                    TileDef_t *tile_def) {
   int32 gd_id;
   int32 gd_file_id;
   int32 xdim_size, ydim_size;
@@ -1365,6 +1366,21 @@ bool GetSpaceDefHDF(Space_def_t *this, char *file_name, char *grid_name) {
 
   if (SDend(sds_file_id) == HDF_ERROR) 
     RETURN_ERROR("ending SD access", "GetSpaceDefHDF", false);
+
+  /* If we are accessing a subtile, we need to offset the origin */
+  if (tile_def != NULL) {
+      double sin_orien = sin(this->orientation_angle);
+      double cos_orien = cos(this->orientation_angle);
+
+      this->ul_corner.x += 
+          tile_def->offset.s * this->pixel_size * cos_orien
+          + tile_def->offset.l * this->pixel_size * sin_orien;
+      this->ul_corner.y += 
+          tile_def->offset.s * this->pixel_size * sin_orien
+          - tile_def->offset.l * this->pixel_size * cos_orien;
+
+      this->img_size = tile_def->size;
+  }
 
   return true;
 }

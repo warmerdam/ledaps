@@ -81,6 +81,8 @@ typedef struct {
   Myhdf_sds_t qa_sds;
   int8 *qabuf;
 
+  TileDef_t tile_def;      /* subwindow, if requested */
+
 } Input_t;
 
 typedef struct {
@@ -92,18 +94,21 @@ typedef struct {
                            /* SDS data structures */
   uint8 *buf[NBAND_REFL_MAX];
                            /* Input data buffer (one line of data) */
+
+  TileDef_t tile_def;      /* subwindow, if requested */
+
 } InputMask_t;
 
 /* Prototypes */
 
-Input_t *OpenInput(char *file_name);
+Input_t *OpenInput(char *file_name, TileDef_t *tile);
 bool GetInputLine(Input_t *this, int iband, int iline, int *line);
 bool CloseInput(Input_t *this);
 bool FreeInput(Input_t *this);
 bool InputMetaCopy(Input_meta_t *this, int nband, Input_meta_t *copy);
 bool GetInputMeta(Input_t *this);
 
-InputMask_t *OpenInputMask(char *file_name);
+InputMask_t *OpenInputMask(char *file_name, TileDef_t *tile);
 bool GetInputMaskLine(InputMask_t *this, int iline, char *line);
 bool FreeInputMask(InputMask_t *this);
 bool CloseInputMask(InputMask_t *this);
