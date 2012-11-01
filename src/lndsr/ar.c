@@ -409,7 +409,7 @@ exclude clouds, cloud shadow & snow pixels flagged by the internal cloud mask
 		if (((float)nb_negative_red/(float)nb_red_obs) > 0.01) {
 			line_ar[0][is_ar]=lut->aerosol_fill;
 			line_ar_stats[0][is_ar]=-100;
-			printf("I FOUND A BAD ONE, %negative=%g.\n",
+			printf("I FOUND A BAD ONE, percent negative=%g.\n",
                                (float)nb_negative_red/(float)nb_red_obs);
 #ifdef DEBUG_AR
 	  		if (fd_ar_diags!=NULL)
@@ -584,7 +584,9 @@ int compute_aot(int band,float toarhoblue,float toarhored,float ts,float tv, flo
 		
 	    }
 /*	&aot2=*aot;*/
+/*
         printf(" variables in compaot toarhored %f toarhoblue %f aot %f\n",toarhored,toarhoblue,*aot);
+*/
         if (*aot < 0.01)
                 *aot=0.01;
 

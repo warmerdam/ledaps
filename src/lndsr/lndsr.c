@@ -966,6 +966,9 @@ int main (int argc, const char **argv) {
 
     printf("Compute Atmos Params with aot550=0.01\n"); fflush(stdout);
     update_atmos_coefs(&atmos_coef,&ar_gridcell, &sixs_tables,line_ar, lut,input->nband, 1);
+    
+    report_atmos_coef( &atmos_coef, 0, 0 );
+    report_atmos_coef( &atmos_coef, 1, 0 );
 
     report_timer( "AR Computation Complete" );
 
@@ -1224,7 +1227,7 @@ int main (int argc, const char **argv) {
 
         /* Compute the aerosol for the regions */
 
-        printf("%d\n",il_ar); fflush(stdout);
+        /* printf("%d\n",il_ar); fflush(stdout); */
 /*  printf("%d\r",il_ar); fflush(stdout);    */
 #ifdef DEBUG_AR
 	diags_il_ar=il_ar;
@@ -2000,3 +2003,26 @@ int is_check_pixel( int is, int il ) {
 
     return 0;
 }
+
+void report_atmos_coef( atmos_t *atmos_coef, int ib, int ic ) {
+    printf( "   atmos_coef[%d,%d]: tgOG=%.15g, tgH2O=%.15g,\n",
+            ib, ic,
+            atmos_coef->tgOG[ib][ic],
+            atmos_coef->tgH2O[ib][ic]);
+    printf( "          td_ra=%.15g, tu_ra=%.15g, rho_mol=%.15g,\n",   
+            atmos_coef->td_ra[ib][ic],
+            atmos_coef->tu_ra[ib][ic],
+            atmos_coef->rho_mol[ib][ic] );
+    printf( "          rho_ra=%.15g, td_da=%.15g, tu_da=%.15g,\n",   
+            atmos_coef->rho_ra[ib][ic],
+            atmos_coef->td_da[ib][ic],
+            atmos_coef->tu_da[ib][ic] );
+    printf( "          S_ra=%.15g, td_r=%.15g, tu_r=%.15g,\n",   
+            atmos_coef->S_ra[ib][ic],
+            atmos_coef->td_r[ib][ic],
+            atmos_coef->tu_r[ib][ic] );
+    printf( "          S_r=%.15g, rho_r=%.15g.\n",   
+            atmos_coef->S_r[ib][ic],
+            atmos_coef->rho_r[ib][ic] );
+}
+
