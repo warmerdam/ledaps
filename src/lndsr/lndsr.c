@@ -563,8 +563,8 @@ int main (int argc, const char **argv) {
 /****
      Get center lat lon and deviation from true north
 ****/
-    img.l=input->size.l/2.; 
-    img.s=input->size.s/2.; 
+    img.l = input->tile_def.full_size.l / 2.0 - input->tile_def.offset.l;
+    img.s = input->tile_def.full_size.s / 2.0 - input->tile_def.offset.s;
     img.is_fill=false;
     if (!FromSpace(space, &img, &geo))
     	ERROR("mapping from space (0)", "main");
@@ -715,8 +715,8 @@ int main (int argc, const char **argv) {
 /****
      Get center lat lon and deviation from true north
 ****/
-    img.l=input->size.l/2.; 
-    img.s=input->size.s/2.; 
+    img.l = input->tile_def.full_size.l / 2.0 - input->tile_def.offset.l;
+    img.s = input->tile_def.full_size.s / 2.0 - input->tile_def.offset.s;
     img.is_fill=false;
     if (!FromSpace(space, &img, &geo))
     	ERROR("mapping from space (0)", "main");
@@ -728,8 +728,8 @@ int main (int argc, const char **argv) {
     delta_y=img.l;
     delta_x=img.s;
 
-    img.l=input->size.l/2.-100.; 
-    img.s=input->size.s/2.; 
+    img.l = input->tile_def.full_size.l / 2.0 - input->tile_def.offset.l - 100.0;
+    img.s = input->tile_def.full_size.s / 2.0 - input->tile_def.offset.s;
     img.is_fill=false;
     if (!FromSpace(space, &img, &geo))
     	ERROR("mapping from space (0)", "main");
