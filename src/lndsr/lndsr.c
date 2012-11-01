@@ -65,6 +65,13 @@ char sds_name[256];
 int32 sds_index;
 int32 dim_sizes[2],start[2],stride[2],edges[2];
 int32 data_type,n_attrs,rank;
+
+/* TODO(warmerdam): for debugging */
+static int check_pixel_count = 0;
+static int check_pixel_x[100];
+static int check_pixel_y[100];
+int is_check_pixel(int, int);
+
 /* Prototypes */
 #ifndef  HPUX
 #define chand chand_
@@ -190,6 +197,7 @@ int main (int argc, const char **argv) {
     float calcuoz(short jday,float flat);
     float get_dem_spres(short *dem,float lat,float lon);
     void swapbytes(void *val,int nbbytes);
+
     TileDef_t *tile_def = NULL;
 
     debug_flag= DEBUG_FLAG;
@@ -200,22 +208,53 @@ int main (int argc, const char **argv) {
 
     set_sixs_path_from(argv[0]);
 
+    /* TODO(warmerdam): the following is just for debugging purposes. */
+    for( i=2; i < argc; i++ ) 
+    {
+        if (strcmp(argv[i],"-srcwin") == 0 && i < argc-4) 
+        {
+            static TileDef_t my_tile_def;
+            
+            my_tile_def.offset.s = atoi(argv[i+1]);
+            my_tile_def.offset.l = atoi(argv[i+2]);
+            my_tile_def.size.s = atoi(argv[i+3]);
+            my_tile_def.size.l = atoi(argv[i+4]);
+            
+            tile_def = &my_tile_def;
+            i += 4;
+        }
+
+        else if (strcmp(argv[i],"-check") == 0 && i < argc-2)
+        {
+            check_pixel_x[check_pixel_count] = atoi(argv[i+1]);
+            check_pixel_y[check_pixel_count] = atoi(argv[i+2]);
+            check_pixel_count++;
+            i += 2;
+        }
+        
+        else 
+        {
+            printf( "Unrecognised argument: %s\n", argv[i] );
+            exit( 1 );
+        }
+    }
+
+    argc = 2;
+
+    /* adjust check pixels to be relative to subwindow */
+    if( tile_def != NULL) 
+    {
+        for( i=0; i < check_pixel_count; i++ )
+        {
+            check_pixel_x[i] -= tile_def->offset.s;
+            check_pixel_y[i] -= tile_def->offset.l;
+        }
+    }
+
+    /* TODO(warmerdam): end of debug arg parsing */
+
     param = GetParam(argc, argv);
     if (param == (Param_t *)NULL) ERROR("getting runtime parameters", "main");
-
-    /* Manually define subtile to operate on */
-#if 0
-    {
-        static TileDef_t my_tile_def;
-
-        my_tile_def.offset.s = 2500;
-        my_tile_def.offset.l = 800;
-        my_tile_def.size.s = 700;
-        my_tile_def.size.l = 300;
-
-        tile_def = &my_tile_def;
-    }
-#endif
 
     /* Open input file */
 
@@ -683,8 +722,8 @@ int main (int argc, const char **argv) {
     	ERROR("mapping from space (0)", "main");
     center_lat=geo.lat * DEG;
     center_lon=geo.lon * DEG;
-    printf ("(y0,x0)=(%d,%d)  (lat0,lon0)=(%f,%f)\n",
-            (int)img.l,(int)img.s,(float)(geo.lat * DEG),(float)(geo.lon * DEG));
+    printf ("(y0,x0)=(%f,%f)  (lat0,lon0)=(%.16f,%.16f)\n",
+            img.l,img.s,(float)(geo.lat * DEG),(float)(geo.lon * DEG));
 
     delta_y=img.l;
     delta_x=img.s;
@@ -694,21 +733,22 @@ int main (int argc, const char **argv) {
     img.is_fill=false;
     if (!FromSpace(space, &img, &geo))
     	ERROR("mapping from space (0)", "main");
-/*
-  printf ("(y1,x1)=(%d,%d)  (lat1,lon1)=(%f,%f)\n",
-  (int)img.l,(int)img.s,(float)(geo.lat * DEG),(float)(geo.lon * DEG));
-*/
+
+    printf ("(y1,x1)=(%f,%f)  (lat1,lon1)=(%.16f,%.16f)\n",
+            img.l,img.s,(float)(geo.lat * DEG),(float)(geo.lon * DEG));
 
     geo.lon=center_lon*RAD;
     geo.is_fill=false;
     if (!ToSpace(space, &geo, &img))
     	ERROR("mapping to space (0)", "main");
-/*
-  printf ("(y2,x2)=(%d,%d)  (lat2,lon2)=(%f,%f)\n",
-  (int)img.l,(int)img.s,(float)(geo.lat * DEG),(float)(geo.lon * DEG));
-*/
+
+    printf ("(y2,x2)=(%f,%f)  (lat2,lon2)=(%.16f,%.16f)\n",
+            img.l,img.s,(float)(geo.lat * DEG),(float)(geo.lon * DEG));
+
     delta_y = delta_y - img.l;
     delta_x = img.s - delta_x;
+
+    printf( "delta_y=%g, delta_x=%g\n", delta_y, delta_x );
     adjust_north=(float)(atan(delta_x/delta_y)*DEG);
 
     printf("True North adjustment = %f\n",adjust_north);
@@ -833,6 +873,20 @@ int main (int argc, const char **argv) {
             coef=(double)(scene_gmt-anc_WV.time[tmpint])/anc_WV.timeres;
             ar_gridcell.wv[il_ar*lut->ar_size.s+is_ar]=(1.-coef)*tmpflt_arr[tmpint]+coef*tmpflt_arr[tmpint+1];
 
+            /* TODO(warmerdam): debugging */
+            if ( fabs(geo.lat * DEG - 70.45) < 0.001
+                 && fabs(geo.lon * DEG + 54.9325) < 0.001) {
+                int i_gc = il_ar*lut->ar_size.s+is_ar;
+                
+                printf( "  DEBUG: ar cell %d,%d\n", is_ar, il_ar );
+                printf( "         tmpflt_arr[] = {%.15g,%.15g,%.15g,%.15g}\n", 
+                        tmpflt_arr[0], tmpflt_arr[1], tmpflt_arr[2], tmpflt_arr[3] );
+                printf( "         scene_gmt=%.15g, anc_WV.timeres=%.15g, tmpint=%d\n", 
+                        scene_gmt, anc_WV.timeres, tmpint );
+                printf( "         coef=%.15g, time[] = {%.15g,%.15g,%.15g,%.15g}\n", 
+                        coef, anc_WV.time[0], anc_WV.time[1], anc_WV.time[2],anc_WV.time[3]);
+            }
+
             if (!no_ozone_file) {
                 interpol_spatial_anc(&anc_O3,ar_gridcell.lat[il_ar*lut->ar_size.s+is_ar],ar_gridcell.lon[il_ar*lut->ar_size.s+is_ar],tmpflt_arr);
                 tmpint=(int)(scene_gmt/anc_O3.timeres);
@@ -867,8 +921,27 @@ int main (int argc, const char **argv) {
                 }
             }
 
+            /* TODO(warmerdam): debugging */
+            if ( fabs(geo.lat * DEG - 70.45) < 0.001
+                 && fabs(geo.lon * DEG + 54.9325) < 0.001) {
+                int i_gc = il_ar*lut->ar_size.s+is_ar;
+                
+                printf( "  DEBUG: ar cell %d,%d\n", is_ar, il_ar );
+                printf( "         lat = %.15g\n", ar_gridcell.lat[i_gc] );
+                printf( "         lon = %.15g\n", ar_gridcell.lon[i_gc] );
+                printf( "         sun_zen = %.15g\n", ar_gridcell.sun_zen[i_gc] );
+                printf( "         view_zen = %.15g\n", ar_gridcell.view_zen[i_gc] );
+                printf( "         rel_az = %.15g\n", ar_gridcell.rel_az[i_gc] );
+                printf( "         wv = %.15g\n", ar_gridcell.wv[i_gc] );
+                printf( "         rel_az = %.15g\n", ar_gridcell.rel_az[i_gc] );
+                printf( "         ozone = %.15g\n", ar_gridcell.ozone[i_gc] );
+                printf( "         spres = %.15g\n", ar_gridcell.spres[i_gc] );
+                printf( "         spres_dem = %.15g\n", ar_gridcell.spres_dem[i_gc] );
+            }
+
         }
     }
+
     if (dem_available) {
         ratio_spres=1.;
         if ((nb_spres_anc > 0)&&(nb_spres_dem>0)) 
@@ -1914,4 +1987,16 @@ void report_timer(const char *stage) {
             (int) (this_time - start_time),
             ctime(&this_time) );
     last_time = this_time;
+}
+
+int is_check_pixel( int is, int il ) {
+    int i;
+
+    for (i=0; i< check_pixel_count; i++) {
+        if (is == check_pixel_x[i] && il == check_pixel_y[i]) {
+            return i+1;
+        }
+    }
+
+    return 0;
 }
