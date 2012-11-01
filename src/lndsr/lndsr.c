@@ -72,6 +72,9 @@ static int check_pixel_x[100];
 static int check_pixel_y[100];
 int is_check_pixel(int, int);
 
+static double check_ar_lat = -360.0;
+static double check_ar_lon = 0.0;
+
 /* Prototypes */
 #ifndef  HPUX
 #define chand chand_
@@ -228,6 +231,14 @@ int main (int argc, const char **argv) {
         {
             check_pixel_x[check_pixel_count] = atoi(argv[i+1]);
             check_pixel_y[check_pixel_count] = atoi(argv[i+2]);
+            check_pixel_count++;
+            i += 2;
+        }
+        
+        else if (strcmp(argv[i],"-checkll") == 0 && i < argc-2)
+        {
+            check_ar_lat = atof(argv[i+1]);
+            check_ar_lon = atof(argv[i+2]);
             check_pixel_count++;
             i += 2;
         }
@@ -874,11 +885,12 @@ int main (int argc, const char **argv) {
             ar_gridcell.wv[il_ar*lut->ar_size.s+is_ar]=(1.-coef)*tmpflt_arr[tmpint]+coef*tmpflt_arr[tmpint+1];
 
             /* TODO(warmerdam): debugging */
-            if ( fabs(geo.lat * DEG - 70.45) < 0.001
-                 && fabs(geo.lon * DEG + 54.9325) < 0.001) {
+            if ( fabs(geo.lat * DEG - check_ar_lat) < 0.001
+                 && fabs(geo.lon * DEG - check_ar_lon) < 0.001) {
                 int i_gc = il_ar*lut->ar_size.s+is_ar;
                 
-                printf( "  DEBUG: ar cell %d,%d\n", is_ar, il_ar );
+                printf( "  DEBUG: ar cell %d [%d,%d]\n", 
+                        i_gc, is_ar, il_ar );
                 printf( "         tmpflt_arr[] = {%.15g,%.15g,%.15g,%.15g}\n", 
                         tmpflt_arr[0], tmpflt_arr[1], tmpflt_arr[2], tmpflt_arr[3] );
                 printf( "         scene_gmt=%.15g, anc_WV.timeres=%.15g, tmpint=%d\n", 
@@ -922,11 +934,12 @@ int main (int argc, const char **argv) {
             }
 
             /* TODO(warmerdam): debugging */
-            if ( fabs(geo.lat * DEG - 70.45) < 0.001
-                 && fabs(geo.lon * DEG + 54.9325) < 0.001) {
+            if ( fabs(geo.lat * DEG - check_ar_lat) < 0.001
+                 && fabs(geo.lon * DEG - check_ar_lon) < 0.001) {
                 int i_gc = il_ar*lut->ar_size.s+is_ar;
                 
-                printf( "  DEBUG: ar cell %d,%d\n", is_ar, il_ar );
+                printf( "  DEBUG: ar cell %d [%d,%d]\n", 
+                        i_gc, is_ar, il_ar );
                 printf( "         lat = %.15g\n", ar_gridcell.lat[i_gc] );
                 printf( "         lon = %.15g\n", ar_gridcell.lon[i_gc] );
                 printf( "         sun_zen = %.15g\n", ar_gridcell.sun_zen[i_gc] );
@@ -967,9 +980,6 @@ int main (int argc, const char **argv) {
     printf("Compute Atmos Params with aot550=0.01\n"); fflush(stdout);
     update_atmos_coefs(&atmos_coef,&ar_gridcell, &sixs_tables,line_ar, lut,input->nband, 1);
     
-    report_atmos_coef( &atmos_coef, 0, 0 );
-    report_atmos_coef( &atmos_coef, 1, 0 );
-
     report_timer( "AR Computation Complete" );
 
     /* Read input first time and compute clear pixels stats for internal cloud screening */
@@ -1827,7 +1837,12 @@ int update_gridcell_atmos_coefs(int irow,int icol,atmos_t *atmos_coef,Ar_gridcel
         atmos_coef->S_r[ib][ipt]=actual_S_r;
         atmos_coef->rho_r[ib][ipt]=actual_rho_ray;
 					
+        if (fabs(ar_gridcell->lat[ipt] - check_ar_lat) < 0.001
+            && fabs(ar_gridcell->lon[ipt] - check_ar_lon) < 0.001) {
+            report_atmos_coef( atmos_coef, ib, ipt );
+        }        
     }
+
     return 0;
 }
 
