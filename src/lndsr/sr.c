@@ -5,6 +5,7 @@
 #include "sixs_runs.h"
 
 extern int is_check_pixel(int, int);
+extern void report_atmos_coef( atmos_t *atmos_coef, int ib, int i2 );
 
 extern atmos_t atmos_coef;
 int SrInterpAtmCoef(Lut_t *lut, Img_coord_int_t *input_loc, atmos_t *atmos_coef,atmos_t *interpol_atmos_coef); 
@@ -134,27 +135,11 @@ bool Sr(Lut_t *lut, int nsamp, int il, int **line_in,  bool mask_flag,
 
             /* TODO(warmerdam): debugging */
             if (is_check_pixel(is,il)) {
-                printf( "   ib=%d, tgOG=%.15g, tgH2O=%.15g, in=%d, out=%d,\n",
+                printf( "   ib=%d, in=%d, out=%d\n", 
                         ib, 
-                        interpol_atmos_coef.tgOG[ib][0],
-                        interpol_atmos_coef.tgH2O[ib][0],
                         line_in[ib][is],
                         line_out[ib][is] );
-                printf( "          td_ra=%.15g, tu_ra=%.15g, rho_mol=%.15g,\n",   
-                        interpol_atmos_coef.td_ra[ib][0],
-                        interpol_atmos_coef.tu_ra[ib][0],
-                        interpol_atmos_coef.rho_mol[ib][0] );
-                printf( "          rho_ra=%.15g, td_da=%.15g, tu_da=%.15g,\n",   
-                        interpol_atmos_coef.rho_ra[ib][0],
-                        interpol_atmos_coef.td_da[ib][0],
-                        interpol_atmos_coef.tu_da[ib][0] );
-                printf( "          S_ra=%.15g, td_r=%.15g, tu_r=%.15g,\n",   
-                        interpol_atmos_coef.S_ra[ib][0],
-                        interpol_atmos_coef.td_r[ib][0],
-                        interpol_atmos_coef.tu_r[ib][0] );
-                printf( "          S_r=%.15g, rho_r=%.15g.\n",   
-                        interpol_atmos_coef.S_r[ib][0],
-                        interpol_atmos_coef.rho_r[ib][0] );
+                report_atmos_coef( &interpol_atmos_coef, ib, 0 );
             }
 
             if (is_fill) continue;
