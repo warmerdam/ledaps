@@ -1805,7 +1805,6 @@ int update_gridcell_atmos_coefs(int irow,int icol,atmos_t *atmos_coef,Ar_gridcel
         k=SIXS_NB_AOT-2;
     coef=(aot550-sixs_tables->aot[k])/(sixs_tables->aot[k+1]-sixs_tables->aot[k]);
 
-
 /*                printf("pressure ratio %d %d %f \n",irow,icol,ratio_spres);*/
     for (ib=0;ib < nband; ib++) {
         atmos_coef->tgOG[ib][ipt]=sixs_tables->T_g_og[ib];				
@@ -1845,6 +1844,8 @@ int update_gridcell_atmos_coefs(int irow,int icol,atmos_t *atmos_coef,Ar_gridcel
 					
         if (fabs(ar_gridcell->lat[ipt] - check_ar_lat) < 0.001
             && fabs(ar_gridcell->lon[ipt] - check_ar_lon) < 0.001) {
+            printf( "   line_ar[0][%d]=%d, aot550=%.15g, k=%d, coef=%.15g\n", 
+                    icol, line_ar[0][icol], aot550, k, coef );
             report_atmos_coef( atmos_coef, ib, ipt );
         }        
     }
@@ -2026,6 +2027,10 @@ int is_check_pixel( int is, int il ) {
 }
 
 void report_atmos_coef( atmos_t *atmos_coef, int ib, int ic ) {
+    if( ib == 0 && ic == 76)
+    {
+        printf( "" );
+    }
     printf( "   atmos_coef[%d,%d]: tgOG=%.15g, tgH2O=%.15g,\n",
             ib, ic,
             atmos_coef->tgOG[ib][ic],
