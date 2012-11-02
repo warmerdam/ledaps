@@ -93,7 +93,7 @@ bool Sr(Lut_t *lut, int nsamp, int il, int **line_in,  bool mask_flag,
         
         /* TODO(warmerdam): debugging */
         if (is_check_pixel(is,il)) {
-            printf( "  DEBUG(Sr) cp=%d:\n", 
+            printf( "\n  DEBUG(Sr) cp=%d:\n", 
                     is_check_pixel(is,il));
         }
 
@@ -214,7 +214,7 @@ int SrInterpAtmCoef(Lut_t *lut, Img_coord_int_t *input_loc, atmos_t *atmos_coef,
 
     n = 0;
     sum_w = 0.0;
-    for (ipt=0;ipt<9;ipt++)
+    for (ipt=0;ipt<13;ipt++)
         for (ib=0;ib<7;ib++)
             sum[ib][ipt]=0.;
 
@@ -246,6 +246,13 @@ int SrInterpAtmCoef(Lut_t *lut, Img_coord_int_t *input_loc, atmos_t *atmos_coef,
      		sum[ib][10] += (atmos_coef->tu_r[ib][ipt] * w);
      		sum[ib][11] += (atmos_coef->S_r[ib][ipt] * w);
      		sum[ib][12] += (atmos_coef->rho_r[ib][ipt] * w);
+
+                if( ib == 0 && is_check_pixel(input_loc->s, input_loc->l)) {
+                    printf( "    interp sum += td_ra[%d][%d]=%.15g, w=%g\n", 
+                            ib, ipt, atmos_coef->td_ra[ib][ipt], w );
+                    printf( "    interp sum += rho_ra[%d][%d]=%.15g, w=%g\n", 
+                            ib, ipt, atmos_coef->rho_ra[ib][ipt], w );
+                }
             }
         }
     }
@@ -266,6 +273,18 @@ int SrInterpAtmCoef(Lut_t *lut, Img_coord_int_t *input_loc, atmos_t *atmos_coef,
             interpol_atmos_coef->S_r[ib][0]=sum[ib][11]/sum_w;
             interpol_atmos_coef->rho_r[ib][0]=sum[ib][12]/sum_w;
 
+            if( ib == 0 && is_check_pixel(input_loc->s, input_loc->l)) {
+                printf( "      interpolated (%d,%d), (%d,%d), (%d,%d), (%d,%d) on %dx%d grid.\n",
+                        p[0].s, p[0].l,
+                        p[1].s, p[1].l,
+                        p[2].s, p[2].l,
+                        p[3].s, p[3].l,
+                        lut->ar_size.s, lut->ar_size.l );
+                printf( "      result td_ra[%d][%d]=%.15g\n", 
+                        ib, 0, (double) interpol_atmos_coef->td_ra[ib][0] );
+                printf( "      result rho_ra[%d][%d]=%.15g\n", 
+                        ib, 0, (double) interpol_atmos_coef->rho_ra[ib][0] );
+            }
 	}
     }
 

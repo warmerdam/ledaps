@@ -239,7 +239,6 @@ int main (int argc, const char **argv) {
         {
             check_ar_lat = atof(argv[i+1]);
             check_ar_lon = atof(argv[i+2]);
-            check_pixel_count++;
             i += 2;
         }
         
@@ -885,12 +884,13 @@ int main (int argc, const char **argv) {
             ar_gridcell.wv[il_ar*lut->ar_size.s+is_ar]=(1.-coef)*tmpflt_arr[tmpint]+coef*tmpflt_arr[tmpint+1];
 
             /* TODO(warmerdam): debugging */
-            if ( fabs(geo.lat * DEG - check_ar_lat) < 0.001
-                 && fabs(geo.lon * DEG - check_ar_lon) < 0.001) {
+            if ( (fabs(geo.lat * DEG - check_ar_lat) < 0.001
+                  && fabs(geo.lon * DEG - check_ar_lon) < 0.001) ) {
                 int i_gc = il_ar*lut->ar_size.s+is_ar;
                 
-                printf( "  DEBUG: ar cell %d [%d,%d]\n", 
-                        i_gc, is_ar, il_ar );
+                printf( "  DEBUG: ar cell %d [%d,%d] (%.15g,%.15g)\n", 
+                        i_gc, is_ar, il_ar,
+                        ar_gridcell.lat[i_gc], ar_gridcell.lon[i_gc] );
                 printf( "         tmpflt_arr[] = {%.15g,%.15g,%.15g,%.15g}\n", 
                         tmpflt_arr[0], tmpflt_arr[1], tmpflt_arr[2], tmpflt_arr[3] );
                 printf( "         scene_gmt=%.15g, anc_WV.timeres=%.15g, tmpint=%d\n", 
@@ -938,10 +938,9 @@ int main (int argc, const char **argv) {
                  && fabs(geo.lon * DEG - check_ar_lon) < 0.001) {
                 int i_gc = il_ar*lut->ar_size.s+is_ar;
                 
-                printf( "  DEBUG: ar cell %d [%d,%d]\n", 
-                        i_gc, is_ar, il_ar );
-                printf( "         lat = %.15g\n", ar_gridcell.lat[i_gc] );
-                printf( "         lon = %.15g\n", ar_gridcell.lon[i_gc] );
+                printf( "  DEBUG: ar cell %d [%d,%d] (%.15g,%.15g)\n", 
+                        i_gc, is_ar, il_ar,
+                        ar_gridcell.lat[i_gc], ar_gridcell.lon[i_gc] );
                 printf( "         sun_zen = %.15g\n", ar_gridcell.sun_zen[i_gc] );
                 printf( "         view_zen = %.15g\n", ar_gridcell.view_zen[i_gc] );
                 printf( "         rel_az = %.15g\n", ar_gridcell.rel_az[i_gc] );
@@ -1416,7 +1415,14 @@ int main (int argc, const char **argv) {
             }
             else
                 line_out[lut->nband+1][is] &= 0xfeff;  /* reset internal cloud mask bit */
-		    
+
+            if( is_check_pixel(is,il) ) {
+                int ib;
+                printf( "  PIXEL[%d,%d] = ", is, il);
+                for( ib=0; ib < lut->nband+5; ib++ )
+                    printf( "%d ", line_out[ib][is] );
+                printf("\n");
+            }
         }
         /* Write each output band */
 
