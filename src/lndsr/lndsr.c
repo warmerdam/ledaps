@@ -74,6 +74,9 @@ int is_check_pixel(int, int);
 
 static double check_ar_lat = -360.0;
 static double check_ar_lon = 0.0;
+int is_ar_check_pixel(double lat, double lon);
+
+extern void report_atmos_coef( atmos_t *atmos_coef, int ib, int ic );
 
 /* Prototypes */
 #ifndef  HPUX
@@ -884,8 +887,7 @@ int main (int argc, const char **argv) {
             ar_gridcell.wv[il_ar*lut->ar_size.s+is_ar]=(1.-coef)*tmpflt_arr[tmpint]+coef*tmpflt_arr[tmpint+1];
 
             /* TODO(warmerdam): debugging */
-            if ( (fabs(geo.lat * DEG - check_ar_lat) < 0.001
-                  && fabs(geo.lon * DEG - check_ar_lon) < 0.001) ) {
+            if ( is_ar_check_pixel(geo.lat * DEG, geo.lon * DEG) ) {
                 int i_gc = il_ar*lut->ar_size.s+is_ar;
                 
                 printf( "  DEBUG: ar cell %d [%d,%d] (%.15g,%.15g)\n", 
@@ -934,8 +936,7 @@ int main (int argc, const char **argv) {
             }
 
             /* TODO(warmerdam): debugging */
-            if ( fabs(geo.lat * DEG - check_ar_lat) < 0.001
-                 && fabs(geo.lon * DEG - check_ar_lon) < 0.001) {
+            if ( is_ar_check_pixel(geo.lat * DEG, geo.lon * DEG) ) {
                 int i_gc = il_ar*lut->ar_size.s+is_ar;
                 
                 printf( "  DEBUG: ar cell %d [%d,%d] (%.15g,%.15g)\n", 
@@ -950,7 +951,6 @@ int main (int argc, const char **argv) {
                 printf( "         spres = %.15g\n", ar_gridcell.spres[i_gc] );
                 printf( "         spres_dem = %.15g\n", ar_gridcell.spres_dem[i_gc] );
             }
-
         }
     }
 
@@ -1184,7 +1184,7 @@ int main (int argc, const char **argv) {
     if (fwrite(ptr_rot_cld[0][0],lut->ar_region_size.l*input->size.s,1,fdtmp)!=1) ERROR("writing dark target to temporary file", "main");
     fflush(fdtmp);
 
-    report_timer( "Cloud Shadow Mask Complete" );
+    report_timer( "dilate_shadow_mask() Complete" );
 
 
 /***
@@ -1244,6 +1244,7 @@ int main (int argc, const char **argv) {
         if (!Ar(il_ar,lut, &input->size, line_in, param->cloud_flag, mask_line, ddv_line,line_ar[il_ar], 
                 line_ar_stats[il_ar], &ar_stats,&ar_gridcell,&sixs_tables))
             ERROR("computing aerosl", "main");
+
 /***
     Save dark target map in temporary file
 ***/
@@ -1254,6 +1255,24 @@ int main (int argc, const char **argv) {
 **/
     }
     printf("\n");
+
+    // TODO(warmerdam): temporary full line_ar reporting.
+    printf( "ar ul=(%.15g,%.15g) +1=(%.15g,%.15g) lr=(%.15g,%.15g)\n", 
+            ar_gridcell.lat[0], 
+            ar_gridcell.lon[0], 
+            ar_gridcell.lat[1], 
+            ar_gridcell.lon[1], 
+            ar_gridcell.lat[ar_gridcell.nbrows*ar_gridcell.nbcols-1],
+            ar_gridcell.lon[ar_gridcell.nbrows*ar_gridcell.nbcols-1] );
+    for( il_ar=0; il_ar < ar_gridcell.nbrows; il_ar++ ) {
+        printf( "DEBUG Fill_Ar_Gaps() il_ar=%d: ", il_ar );
+        for( i=0; i < ar_gridcell.nbcols; i++ )
+        {
+            printf("%5d ", line_ar[il_ar][0][i] );
+        }
+        printf("\n");
+    }
+
 /**
    fclose(fdtmp2);
 **/
@@ -1261,7 +1280,7 @@ int main (int argc, const char **argv) {
     fclose(fd_ar_diags);
 #endif
 
-    report_timer( "Cloud Shadow Mask Complete" );
+    report_timer( "Cloud Shadow Mask 2nd Pass Complete" );
 
     /***
 	Fill Gaps in the coarse resolution aerosol product for bands 1(0), 2(1) and 3(2)
@@ -1269,6 +1288,23 @@ int main (int argc, const char **argv) {
     printf("write Fill Gaps ..."); fflush(stdout);
     Fill_Ar_Gaps(lut, line_ar, 0);
 /*    printf("WARNING NOT FILLING GAPS IN THE AEROSOL");*/
+
+    // TODO(warmerdam): temporary full line_ar reporting.
+    printf( "ar ul=(%.15g,%.15g) +1=(%.15g,%.15g) lr=(%.15g,%.15g)\n", 
+            ar_gridcell.lat[0], 
+            ar_gridcell.lon[0], 
+            ar_gridcell.lat[1], 
+            ar_gridcell.lon[1], 
+            ar_gridcell.lat[ar_gridcell.nbrows*ar_gridcell.nbcols-1],
+            ar_gridcell.lon[ar_gridcell.nbrows*ar_gridcell.nbcols-1] );
+    for( il_ar=0; il_ar < ar_gridcell.nbrows; il_ar++ ) {
+        printf( "DEBUG Fill_Ar_Gaps() il_ar=%d: ", il_ar );
+        for( i=0; i < ar_gridcell.nbcols; i++ )
+        {
+            printf("%5d ", line_ar[il_ar][0][i] );
+        }
+        printf("\n");
+    }
     printf("Done\n"); fflush(stdout);
 /*
   Fill_Ar_Gaps(lut, line_ar, 1);
@@ -1842,8 +1878,7 @@ int update_gridcell_atmos_coefs(int irow,int icol,atmos_t *atmos_coef,Ar_gridcel
         atmos_coef->S_r[ib][ipt]=actual_S_r;
         atmos_coef->rho_r[ib][ipt]=actual_rho_ray;
 					
-        if (fabs(ar_gridcell->lat[ipt] - check_ar_lat) < 0.001
-            && fabs(ar_gridcell->lon[ipt] - check_ar_lon) < 0.001) {
+        if ( is_ar_check_pixel(ar_gridcell->lat[ipt], ar_gridcell->lon[ipt]) ) {
             printf( "   line_ar[0][%d]=%d, aot550=%.15g, k=%d, coef=%.15g\n", 
                     icol, line_ar[0][icol], aot550, k, coef );
             report_atmos_coef( atmos_coef, ib, ipt );
@@ -2024,6 +2059,15 @@ int is_check_pixel( int is, int il ) {
     }
 
     return 0;
+}
+
+int is_ar_check_pixel( double lat, double lon ) {
+    if( fabs(lat - check_ar_lat) < 0.001
+        && fabs(lon - check_ar_lon) < 0.001) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 void report_atmos_coef( atmos_t *atmos_coef, int ib, int ic ) {

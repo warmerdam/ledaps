@@ -19,6 +19,7 @@ extern int diags_il_ar;
 #endif
 void chand(float *phi,float *muv,float *mus,float *tau_ray,float *actual_rho_ray);
 void csalbr(float *tau_ray,float *actual_S_r);
+extern int is_ar_check_pixel( double lat, double lon );
 
 int compute_aot(int band,float rho_toa,float rho_surf_est,float ts,float tv, float phi, float uoz, float uwv, float spres,sixs_tables_t *sixs_tables,float *aot);
 int update_gridcell_atmos_coefs(int irow,int icol,atmos_t *atmos_coef,Ar_gridcell_t *ar_gridcell, sixs_tables_t *sixs_tables,int **line_ar,Lut_t *lut,int nband, int bkgd_aerosol);
@@ -822,6 +823,10 @@ int Fill_Ar_Gaps(Lut_t *lut, int ***line_ar, int ib) {
             }
         }
     } 
+
+    printf( "Fill_Ar_Gaps(): Found %d valid pixels and %d gap pixels to fill.\n", 
+            count, lut->ar_size.l * lut->ar_size.s - count );
+
     if (count==0)
         return 0;
     if (count==1) {
