@@ -95,6 +95,11 @@ void report_timer(const char *stage);
 int read_6S_results_from_file(char *filename,sixs_tables_t *sixs_tables);
 int write_6S_results_to_file(char *filename,sixs_tables_t *sixs_tables);
 #endif
+
+#ifdef SAVE_AR_RESULTS
+#define AR_RESULTS_FILENAME "AEROSOL_RUN_RESULTS.hdf"
+#endif
+
 void sun_angles (short jday,float gmt,float flat,float flon,float *ts,float *fs);
 /* Functions */
 
@@ -205,6 +210,8 @@ int main (int argc, const char **argv) {
     void swapbytes(void *val,int nbbytes);
 
     TileDef_t *tile_def = NULL;
+    int need_6S_results = 1;
+    int loaded_ar_results = 0;
 
     debug_flag= DEBUG_FLAG;
 
@@ -780,8 +787,6 @@ int main (int argc, const char **argv) {
   printf("Center: %d %f %f %f %f %f\n",input->meta.acq_date.doy,scene_gmt,center_lat,center_lon,input->meta.sun_zen*DEG,input->meta.sun_az*DEG);
 */	
 
-    int need_6S_results = 1;
-
 #ifdef SAVE_6S_RESULTS
     need_6S_results = read_6S_results_from_file(SIXS_RESULTS_FILENAME,&sixs_tables);
 #endif
@@ -1095,6 +1100,16 @@ int main (int argc, const char **argv) {
 
     report_timer( "Thermal Cloud Diag Complete" );
 
+#ifdef SAVE_AR_RESULTS
+    // This is just for testing loading early in the run.
+    if (read_ar_results_from_file(AR_RESULTS_FILENAME, &ar_gridcell, 
+                                  line_ar, tile_def)) {
+        printf( "Aerosol values read from %s, overriding computed values.\n", 
+                AR_RESULTS_FILENAME);
+        loaded_ar_results = 1;
+    }
+#endif
+
 /***
     Create dark target temporary file
 ***/
@@ -1256,23 +1271,6 @@ int main (int argc, const char **argv) {
     }
     printf("\n");
 
-    // TODO(warmerdam): temporary full line_ar reporting.
-    printf( "ar ul=(%.15g,%.15g) +1=(%.15g,%.15g) lr=(%.15g,%.15g)\n", 
-            ar_gridcell.lat[0], 
-            ar_gridcell.lon[0], 
-            ar_gridcell.lat[1], 
-            ar_gridcell.lon[1], 
-            ar_gridcell.lat[ar_gridcell.nbrows*ar_gridcell.nbcols-1],
-            ar_gridcell.lon[ar_gridcell.nbrows*ar_gridcell.nbcols-1] );
-    for( il_ar=0; il_ar < ar_gridcell.nbrows; il_ar++ ) {
-        printf( "DEBUG Fill_Ar_Gaps() il_ar=%d: ", il_ar );
-        for( i=0; i < ar_gridcell.nbcols; i++ )
-        {
-            printf("%5d ", line_ar[il_ar][0][i] );
-        }
-        printf("\n");
-    }
-
 /**
    fclose(fdtmp2);
 **/
@@ -1280,36 +1278,52 @@ int main (int argc, const char **argv) {
     fclose(fd_ar_diags);
 #endif
 
+#ifdef SAVE_AR_RESULTS
+    if (read_ar_results_from_file(AR_RESULTS_FILENAME, &ar_gridcell, 
+                                  line_ar, tile_def)) {
+        printf( "Aerosol values read from %s, overriding computed values.\n", 
+                AR_RESULTS_FILENAME);
+        loaded_ar_results = 1;
+    }
+#endif
+
+#ifdef SAVE_AR_RESULTS
+    if (!loaded_ar_results) {
+        write_ar_results_to_file("PreGapFillingAerosol.hdf", &ar_gridcell, 
+                                 line_ar);
+    }
+#endif
+
     report_timer( "Cloud Shadow Mask 2nd Pass Complete" );
 
     /***
 	Fill Gaps in the coarse resolution aerosol product for bands 1(0), 2(1) and 3(2)
     **/
-    printf("write Fill Gaps ..."); fflush(stdout);
-    Fill_Ar_Gaps(lut, line_ar, 0);
-/*    printf("WARNING NOT FILLING GAPS IN THE AEROSOL");*/
 
-    // TODO(warmerdam): temporary full line_ar reporting.
-    printf( "ar ul=(%.15g,%.15g) +1=(%.15g,%.15g) lr=(%.15g,%.15g)\n", 
-            ar_gridcell.lat[0], 
-            ar_gridcell.lon[0], 
-            ar_gridcell.lat[1], 
-            ar_gridcell.lon[1], 
-            ar_gridcell.lat[ar_gridcell.nbrows*ar_gridcell.nbcols-1],
-            ar_gridcell.lon[ar_gridcell.nbrows*ar_gridcell.nbcols-1] );
-    for( il_ar=0; il_ar < ar_gridcell.nbrows; il_ar++ ) {
-        printf( "DEBUG Fill_Ar_Gaps() il_ar=%d: ", il_ar );
-        for( i=0; i < ar_gridcell.nbcols; i++ )
-        {
-            printf("%5d ", line_ar[il_ar][0][i] );
-        }
-        printf("\n");
-    }
-    printf("Done\n"); fflush(stdout);
+    if (!loaded_ar_results) {
+        printf("write Fill Gaps ..."); fflush(stdout);
+        Fill_Ar_Gaps(lut, line_ar, 0);
 /*
   Fill_Ar_Gaps(lut, line_ar, 1);
   Fill_Ar_Gaps(lut, line_ar, 2);
 */
+        printf("Done Fill Gaps\n"); fflush(stdout);
+    }
+
+/*    printf("WARNING NOT FILLING GAPS IN THE AEROSOL");*/
+
+#ifdef SAVE_AR_RESULTS
+    if (!loaded_ar_results) {
+        if (!write_ar_results_to_file(AR_RESULTS_FILENAME, &ar_gridcell, 
+                                      line_ar)) {
+            printf( "Failed to write %s.\n", AR_RESULTS_FILENAME);
+        } else {
+            printf( "Aerosol values written to %s for reuse.\n", 
+                    AR_RESULTS_FILENAME);
+        }
+    }
+#endif
+
 /* Compute atmospheric coefs for the whole scene using retrieved aot : NAZMI */
     nbpts=lut->ar_size.l*lut->ar_size.s;
 

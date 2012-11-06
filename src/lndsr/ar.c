@@ -903,3 +903,146 @@ int Fill_Ar_Gaps(Lut_t *lut, int ***line_ar, int ib) {
 	   
     return 0;
 }
+
+/*
+  !Description: Write line_ar aerosol arrays to a file for future use.
+
+  !Input parameters: 
+
+    filename - name of file to write to
+    ar_gridcell - aerosol grid definitions
+    line_ar - grid of aerosol values
+	
+  !END****************************************************************************
+*/
+int write_ar_results_to_file(char *filename, Ar_gridcell_t *ar_gridcell,
+                             int ***line_ar) {
+
+    int32 hdf_file_id;
+    int sds_file_id, i;
+    Myhdf_sds_t sds;
+    int32 start[MYHDF_MAX_RANK], nval[MYHDF_MAX_RANK];
+
+    /* Create the file with HDF open */
+
+    hdf_file_id = Hopen(filename, DFACC_CREATE, DEF_NDDS); 
+    if(hdf_file_id == HDF_ERROR) {
+        return 0;
+    }
+    
+    /* Close the file */
+
+    Hclose(hdf_file_id);
+
+    /* Open file for SD access */
+
+    sds_file_id = SDstart(filename, DFACC_RDWR);
+    if (sds_file_id == HDF_ERROR) {
+        unlink(filename);
+        return 0;
+    }
+
+    sds.type = DFNT_INT32;
+    sds.rank = 2;
+    sds.name = "aerosol";
+    sds.dim[0].nval = ar_gridcell->nbrows;
+    sds.dim[0].type = sds.type;
+    sds.dim[0].name = "YDim_Grid";
+    sds.dim[1].nval = ar_gridcell->nbcols;
+    sds.dim[1].type = sds.type;
+    sds.dim[1].name = "XDim_Grid";
+
+    if( !PutSDSInfo(sds_file_id, &sds) ) {
+        unlink(filename);
+        return 0;
+    }
+
+    if (sizeof(int) != 4) {
+        fprintf( stderr, 
+                 "Yikes! int!=int32 in write_ar_results_to_file(), bailing.\n");
+        unlink(filename);
+        return 0;
+    }
+
+    for( i = 0; i < ar_gridcell->nbrows; i++ ) {
+        start[0] = i; 
+        start[1] = 0;
+        nval[0] = 1;
+        nval[1] = ar_gridcell->nbcols;
+      
+        if (SDwritedata(sds.id, start, NULL, nval, line_ar[i][0] ) == HDF_ERROR)
+        {
+            unlink(filename);
+            return 0;
+        }
+    }  
+
+    SDendaccess(sds.id);
+    SDend(sds_file_id);
+
+    return 1;
+}
+
+/*
+  !Description: Read line_ar aerosol arrays from a file.
+
+  !Input parameters: 
+
+    filename - name of file to write to
+    ar_gridcell - aerosol grid definitions
+    line_ar - grid of aerosol values
+    tile_def - defines subtile of whole scene being operated on.
+	
+  !END****************************************************************************
+*/
+
+int read_ar_results_from_file(char *filename, Ar_gridcell_t *ar_gridcell,
+                              int ***line_ar, TileDef_t *tile_def) {
+    FILE *fp;
+    int sds_file_id, i;
+    Myhdf_sds_t sds;
+    int32 start[MYHDF_MAX_RANK], nval[MYHDF_MAX_RANK];
+
+    /* Does the file exist? */
+    fp = fopen(filename,"r");
+    if( fp == NULL )
+        return 0;
+    fclose(fp);
+
+    /* Open file for SD access */
+
+    sds_file_id = SDstart(filename, DFACC_RDONLY);
+    if (sds_file_id == HDF_ERROR) {
+        fprintf( stderr, "SDstart(%s) failed.", filename );
+        return 0;
+    }
+
+    memset(&sds, 0, sizeof(sds));
+
+    sds.name = strdup("aerosol");
+    if (!GetSDSInfo(sds_file_id, &sds)) {
+        return 0;
+    }
+
+    /* TODO(warmerdam): Need to add size validation and subsetting */
+
+    if (sds.rank != 2 ) {
+        fprintf( stderr, "Size mismatch on aerosaol file.\n" );
+        return 0;
+    }
+
+    for( i = 0; i < ar_gridcell->nbrows; i++ ) {
+        start[0] = i; 
+        start[1] = 0;
+        nval[0] = 1;
+        nval[1] = ar_gridcell->nbcols;
+      
+        if (SDreaddata(sds.id, start, NULL, nval, line_ar[i][0] ) == HDF_ERROR)
+        {
+            return 0;
+        }
+    }  
+    
+    return 1;
+}
+
