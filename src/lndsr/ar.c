@@ -26,7 +26,7 @@ int update_gridcell_atmos_coefs(int irow,int icol,atmos_t *atmos_coef,Ar_gridcel
 
 bool Ar(int il_ar,Lut_t *lut, Img_coord_int_t *size_in, int ***line_in, bool mask_flag, 
         char **mask_line, char **ddv_line, int **line_ar, int **line_ar_stats, Ar_stats_t *ar_stats,
-        Ar_gridcell_t *ar_gridcell,sixs_tables_t *sixs_tables) 
+        Ar_gridcell_t *ar_gridcell,sixs_tables_t *sixs_tables, int loaded_ar_results) 
 {
 /***
     ddv_line contains results of cloud_screening when this routine is called
@@ -200,6 +200,11 @@ bool Ar(int il_ar,Lut_t *lut, Img_coord_int_t *size_in, int ***line_in, bool mas
       
                 }
             }
+        }
+
+        /* If we already have final line_ar[] values we skip the rest. */
+        if (loaded_ar_results) {
+            continue;
         }
     
 #ifdef DEBUG_AR
@@ -997,11 +1002,12 @@ int write_ar_results_to_file(char *filename, Ar_gridcell_t *ar_gridcell,
 */
 
 int read_ar_results_from_file(char *filename, Ar_gridcell_t *ar_gridcell,
-                              int ***line_ar, TileDef_t *tile_def) {
+                              int ***line_ar, TileDef_t *tile_def, Lut_t *lut) {
     FILE *fp;
-    int sds_file_id, i;
+    int sds_file_id, line;
     Myhdf_sds_t sds;
     int32 start[MYHDF_MAX_RANK], nval[MYHDF_MAX_RANK];
+    Img_coord_int_t ar_offset, ar_size;
 
     /* Does the file exist? */
     fp = fopen(filename,"r");
@@ -1024,20 +1030,35 @@ int read_ar_results_from_file(char *filename, Ar_gridcell_t *ar_gridcell,
         return 0;
     }
 
-    /* TODO(warmerdam): Need to add size validation and subsetting */
+    /* Do we need to select a subwindow? */
+    if (tile_def == NULL
+        || (tile_def->size.s == tile_def->full_size.s
+            && tile_def->size.l == tile_def->full_size.l) ) {
+        ar_offset.s = ar_offset.l = 0;
+        ar_size.s = ar_gridcell->nbcols;
+        ar_size.l = ar_gridcell->nbrows;
+    } else {
+        ar_offset.s = tile_def->offset.s / lut->ar_region_size.s;
+        ar_offset.l = tile_def->offset.l / lut->ar_region_size.l;
+        ar_size.s = ar_gridcell->nbcols;
+        ar_size.l = ar_gridcell->nbrows;
 
+        printf( "Loading subset of aerosol data, %dx%d @ %d,%d\n", 
+                ar_size.s, ar_size.l, ar_offset.s, ar_offset.l );
+    }
+    
     if (sds.rank != 2 ) {
         fprintf( stderr, "Size mismatch on aerosaol file.\n" );
         return 0;
     }
 
-    for( i = 0; i < ar_gridcell->nbrows; i++ ) {
-        start[0] = i; 
-        start[1] = 0;
+    for( line = 0; line < ar_size.l; line++ ) {
+        start[0] = line + ar_offset.l; 
+        start[1] = ar_offset.s;
         nval[0] = 1;
-        nval[1] = ar_gridcell->nbcols;
+        nval[1] = ar_size.s;
       
-        if (SDreaddata(sds.id, start, NULL, nval, line_ar[i][0] ) == HDF_ERROR)
+        if (SDreaddata(sds.id, start, NULL, nval, line_ar[line][0] ) == HDF_ERROR)
         {
             return 0;
         }
@@ -1045,4 +1066,3 @@ int read_ar_results_from_file(char *filename, Ar_gridcell_t *ar_gridcell,
     
     return 1;
 }
-

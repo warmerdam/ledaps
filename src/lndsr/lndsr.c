@@ -1100,16 +1100,6 @@ int main (int argc, const char **argv) {
 
     report_timer( "Thermal Cloud Diag Complete" );
 
-#ifdef SAVE_AR_RESULTS
-    // This is just for testing loading early in the run.
-    if (read_ar_results_from_file(AR_RESULTS_FILENAME, &ar_gridcell, 
-                                  line_ar, tile_def)) {
-        printf( "Aerosol values read from %s, overriding computed values.\n", 
-                AR_RESULTS_FILENAME);
-        loaded_ar_results = 1;
-    }
-#endif
-
 /***
     Create dark target temporary file
 ***/
@@ -1202,6 +1192,15 @@ int main (int argc, const char **argv) {
     report_timer( "dilate_shadow_mask() Complete" );
 
 
+#ifdef SAVE_AR_RESULTS
+    if (read_ar_results_from_file(AR_RESULTS_FILENAME, &ar_gridcell, 
+                                  line_ar, tile_def, lut)) {
+        printf( "Aerosol values read from %s instead of being computed.\n", 
+                AR_RESULTS_FILENAME);
+        loaded_ar_results = 1;
+    }
+#endif
+
 /***
     Start back at the beginning of the temporary file.
 ***/
@@ -1257,7 +1256,7 @@ int main (int argc, const char **argv) {
 	diags_il_ar=il_ar;
 #endif
         if (!Ar(il_ar,lut, &input->size, line_in, param->cloud_flag, mask_line, ddv_line,line_ar[il_ar], 
-                line_ar_stats[il_ar], &ar_stats,&ar_gridcell,&sixs_tables))
+                line_ar_stats[il_ar], &ar_stats,&ar_gridcell,&sixs_tables, loaded_ar_results))
             ERROR("computing aerosl", "main");
 
 /***
@@ -1279,15 +1278,6 @@ int main (int argc, const char **argv) {
 #endif
 
 #ifdef SAVE_AR_RESULTS
-    if (read_ar_results_from_file(AR_RESULTS_FILENAME, &ar_gridcell, 
-                                  line_ar, tile_def)) {
-        printf( "Aerosol values read from %s, overriding computed values.\n", 
-                AR_RESULTS_FILENAME);
-        loaded_ar_results = 1;
-    }
-#endif
-
-#ifdef SAVE_AR_RESULTS
     if (!loaded_ar_results) {
         write_ar_results_to_file("PreGapFillingAerosol.hdf", &ar_gridcell, 
                                  line_ar);
@@ -1301,13 +1291,15 @@ int main (int argc, const char **argv) {
     **/
 
     if (!loaded_ar_results) {
-        printf("write Fill Gaps ..."); fflush(stdout);
+        printf("write Fill Gaps ...\n"); fflush(stdout);
         Fill_Ar_Gaps(lut, line_ar, 0);
 /*
   Fill_Ar_Gaps(lut, line_ar, 1);
   Fill_Ar_Gaps(lut, line_ar, 2);
 */
         printf("Done Fill Gaps\n"); fflush(stdout);
+    } else {
+        printf( "Skipping Fill_Ar_Gaps()\n" );
     }
 
 /*    printf("WARNING NOT FILLING GAPS IN THE AEROSOL");*/
