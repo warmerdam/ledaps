@@ -1117,7 +1117,7 @@ char *levels(int kpds6, int kpds7)
 {
 
 	int o11, o12;
-        char x[128];
+        static char x[128];
 	
 	/* octets 11 and 12 */
 	o11 = kpds7 / 256;

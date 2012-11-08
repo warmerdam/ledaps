@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include "read_grib_tools.h"
 
@@ -10,7 +11,7 @@ short getdoy(short year,short month,short day);
 
 int read_grib_anc(t_ncep_ancillary *anc,int datatype) {
 	FILE *fd;
-	char where[10],tag[10],date[30];
+	char where[20],tag[10],date[30];
 	int i,grib_ret,ny,nx;
 	short year,doy,month,day,hour,minute;
 	float time,sec;
