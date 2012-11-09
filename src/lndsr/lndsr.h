@@ -131,4 +131,13 @@ float *td_r[7],*tu_r[7],*S_r[7],*rho_r[7];
 int allocate_mem_atmos_coeff(int nbpts,atmos_t *atmos_coef);
 int free_mem_atmos_coeff(atmos_t *atmos_coef);
 
+void report_atmos_coef( atmos_t *atmos_coef, int ib, int ic );
+void report_timer(const char *stage);
+
+int is_check_pixel(int, int);
+void add_check_pixel(int, int);
+void adjust_check_pixels(int, int);
+
+int is_ar_check_pixel(int, int);
+
 #endif
