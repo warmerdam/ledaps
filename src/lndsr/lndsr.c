@@ -223,6 +223,11 @@ int main (int argc, const char **argv) {
             i += 2;
         }
         
+        else if (strcmp(argv[i],"-debug") == 0)
+        {
+            debug_flag = 1;
+        }
+        
         else 
         {
             printf( "Unrecognised argument: %s\n", argv[i] );
@@ -777,7 +782,7 @@ int main (int argc, const char **argv) {
             sixs_tables.uoz=tmpflt_arr[tmpint];
         }
     } else {
-        jday=(short)input->meta.acq_date.doy;    	  
+        jday=(short)input->meta.acq_date.doy;
         sixs_tables.uoz=calcuoz(jday,(float)center_lat);
     }
 /***
@@ -787,7 +792,7 @@ int main (int argc, const char **argv) {
     tmpint=anc_SP.nblayers-2;
     coef=(double)(scene_gmt-anc_SP.time[tmpint])/anc_SP.timeres;
     tmpflt=(1.-coef)*tmpflt_arr[tmpint]+coef*tmpflt_arr[tmpint+1];
-    sixs_tables.target_alt=(1013.-tmpflt)/-100.; / * target altitude in km (negative=above ground)* /
+    sixs_tables.target_alt=(1013.-tmpflt)/-100.; / * target altitude in km (negative=above grou
 ***/
 
     sixs_tables.target_alt=0.; /* target altitude in km (sea level) */
