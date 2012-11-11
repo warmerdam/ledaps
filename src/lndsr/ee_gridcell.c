@@ -16,6 +16,7 @@
 Ar_gridcell_t *ee_build_ar_gridcell(Lut_t *lut,
                                     Space_t *space,
                                     Input_meta_t *meta,
+                                    double scene_gmt,
                                     const float *anc_SP,
                                     const float *anc_WV,
                                     const float *anc_O3,
@@ -60,18 +61,10 @@ Ar_gridcell_t *ee_build_ar_gridcell(Lut_t *lut,
         ERROR("allocating ar_gridcell->spres_dem", "main");
 
 /* -------------------------------------------------------------------- */
-/*      Compute Scene GMT time.                                         */
-/* -------------------------------------------------------------------- */
-    float scene_gmt;
-
-    scene_gmt=meta->acq_date.hour+meta->acq_date.minute/60.+meta->acq_date.second/3600.;
-    if ( scene_gmt < 0.) scene_gmt=scene_gmt+24.;
-
-/* -------------------------------------------------------------------- */
 /*      interpolate ancillary data for AR grid cells (in time only)     */
 /* -------------------------------------------------------------------- */
-    Img_coord_float_t img;
     Img_coord_int_t loc;
+    Img_coord_float_t img;
     Geo_coord_t geo;
     int il_ar, is_ar;
     double sum_spres_anc,sum_spres_dem;

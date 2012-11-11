@@ -29,6 +29,7 @@
 Ar_gridcell_t *ee_build_ar_gridcell(Lut_t *lut,
                                     Space_t *space,
                                     Input_meta_t *meta,
+                                    double scene_gmt,
                                     const float *anc_SP,
                                     const float *anc_WV,
                                     const float *anc_O3,
@@ -36,6 +37,7 @@ Ar_gridcell_t *ee_build_ar_gridcell(Lut_t *lut,
 
 int ee_lndsr_main(
     const char *metadata,
+    const char *sixs_filename,
 
     int full_input_size_s, int full_input_size_l,
     int input_offset_s, int input_offset_l,

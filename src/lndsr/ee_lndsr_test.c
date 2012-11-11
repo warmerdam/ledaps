@@ -56,10 +56,10 @@ int main(int argc, char **argv) {
 
     const char *src_dir = NULL;
     
-    char filename[2048], line[80], *r;
+    char filename[2048], line[128], *r;
     int i;
                                                        
-    char *metadata;
+    char *metadata, *sixs_filename;
 
     int full_input_size_s=0, full_input_size_l=0;
     int input_offset_s=0, input_offset_l=0;
@@ -103,6 +103,10 @@ int main(int argc, char **argv) {
     sprintf( filename, "%s/ee_lndsr_parms.txt", src_dir );
     fpParms = fopen(filename, "r");
 
+    r = fgets(line, sizeof(line), fpParms);
+    sixs_filename = strdup(line);
+    sixs_filename[strlen(sixs_filename)-1] = '\0'; /* trim newline */
+    
     r = fgets(line, sizeof(line), fpParms);
     full_input_size_s = atoi(line);
 
@@ -196,7 +200,7 @@ int main(int argc, char **argv) {
 /* -------------------------------------------------------------------- */
     int error;
 
-    error = ee_lndsr_main( metadata, 
+    error = ee_lndsr_main( metadata, sixs_filename,
                            full_input_size_s, full_input_size_l,
                            input_offset_s, input_offset_l,
                            input_size_s, input_size_l, 6 /* nband */,
