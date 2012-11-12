@@ -130,6 +130,11 @@ Ar_gridcell_t *ee_build_ar_gridcell(Lut_t *lut,
                 ar_gridcell->spres_dem[ipt]=
                     1013.2*exp(-anc_dem[ipt]/8000.);
 
+            if (ar_gridcell->spres_dem[ipt] > 0) {
+                sum_spres_dem += ar_gridcell->spres_dem[ipt];
+                nb_spres_dem++;
+            }
+
             /* TODO(warmerdam): debugging */
             if ( is_ar_check_pixel(is_ar, il_ar) ) {
                 printf( "  DEBUG: ar cell %d [%d,%d] (%.15g,%.15g)\n", 
@@ -145,6 +150,33 @@ Ar_gridcell_t *ee_build_ar_gridcell(Lut_t *lut,
             }
         } /* is_ar */
     } /* il_ar */
+
+/* -------------------------------------------------------------------- */
+/*      Adjust spres[]                                                  */
+/* -------------------------------------------------------------------- */
+    float ratio_spres=1.;
+
+    if ((nb_spres_anc > 0)&&(nb_spres_dem>0)) {
+        ratio_spres=(float)((sum_spres_anc/nb_spres_anc)/(sum_spres_dem/nb_spres_dem));
+    }
+    printf("Ratio pressure %.15g\n",ratio_spres);
+
+    for (il_ar = 0; il_ar < lut->ar_size.l;il_ar++) 
+    {
+        for (is_ar=0;is_ar < lut->ar_size.s; is_ar++) 
+        {
+            int ipt = is_ar + il_ar * lut->ar_size.s;
+
+            if ((ar_gridcell->spres[ipt] > 0)&&(ar_gridcell->spres_dem[ipt] > 0))
+                ar_gridcell->spres[ipt]=ar_gridcell->spres_dem[ipt]*ar_gridcell->spres[ipt]/1013.;
+
+            /* TODO(warmerdam): debugging */
+            if ( is_ar_check_pixel(is_ar, il_ar) ) {
+                printf( "  DEBUG: adjusted spres@%d [%d,%d] = %.15g\n", 
+                        ipt, is_ar, il_ar, ar_gridcell->spres[ipt] );
+            }
+        }
+    }
 
     return ar_gridcell;
 }

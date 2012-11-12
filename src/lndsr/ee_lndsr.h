@@ -43,7 +43,9 @@ int ee_lndsr_main(
     int input_offset_s, int input_offset_l,
     int input_size_s, int input_size_l, int nband,
     short *band1, short *band2, short *band3, 
-    short *band4, short *band5, short *band7,
+    short *band4, short *band5, short *band7, 
+    const short *thermal, const int8 *lndcal_QA, 
+    const float *anc_ATEMP,
 
     int utm_zone, 
     double ul_x, double ul_y, double pixel_size,
@@ -52,7 +54,6 @@ int ee_lndsr_main(
     const short *aerosol,
     const float *anc_SP,
     const float *anc_WV,
-    const float *anc_ATEMP,
     const float *anc_O3,
     const float *anc_dem);
 
@@ -61,6 +62,8 @@ bool ee_GetInputMeta(Input_meta_t *meta, const char *metadata);
 int ee_PrepareSpaceDef( Space_def_t *space_def, int utm_zone,
                         double ul_x, double ul_y, double pixel_size,
                         Img_coord_int_t *input_size );
+int ***ee_PrepareLineAr( Ar_gridcell_t *ar_gridcell, const short *aerosol );
+int ***ee_PrepareLineIn( TileDef_t *tile_def, Lut_t *lut );
 
 #endif /* ndef LNDSR_EE_H */
 

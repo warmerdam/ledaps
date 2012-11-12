@@ -11,6 +11,8 @@
 
 atmos_t atmos_coef;
 
+#define AERO_NB_BANDS 3
+
 /************************************************************************/
 /*                           ee_lndsr_main()                            */
 /************************************************************************/
@@ -39,7 +41,9 @@ int ee_lndsr_main(
     int input_offset_s, int input_offset_l,
     int input_size_s, int input_size_l, int nband,
     short *band1, short *band2, short *band3, 
-    short *band4, short *band5, short *band7,
+    short *band4, short *band5, short *band7, 
+    const short *thermal, const int8* lndcal_QA,
+    const float *anc_ATEMP,
 
     int utm_zone, 
     double ul_x, double ul_y, double pixel_size,
@@ -48,7 +52,6 @@ int ee_lndsr_main(
     const short *aerosol,
     const float *anc_SP,
     const float *anc_WV,
-    const float *anc_ATEMP,
     const float *anc_O3,
     const float *anc_dem)
 
@@ -60,6 +63,14 @@ int ee_lndsr_main(
     Space_t *space = NULL;
     TileDef_t tile_def;
     sixs_tables_t sixs_tables;
+    short *landsat_band[6];
+
+    landsat_band[0] = band1;
+    landsat_band[1] = band2;
+    landsat_band[2] = band3;
+    landsat_band[3] = band4;
+    landsat_band[4] = band5;
+    landsat_band[5] = band7;
 
     tile_def.full_size.s = full_input_size_s;
     tile_def.full_size.l = full_input_size_l;
@@ -171,6 +182,11 @@ int ee_lndsr_main(
     }
 
 /* -------------------------------------------------------------------- */
+/*      Prepare line_ar array representation of aerosol values.         */
+/* -------------------------------------------------------------------- */
+    int ***line_ar = ee_PrepareLineAr( ar_gridcell, aerosol );
+
+/* -------------------------------------------------------------------- */
 /*      Compute atmospheric coefs for the whole scene with              */
 /*      aot550=0.01 for use in internal cloud screening : NAZMI         */
 /* -------------------------------------------------------------------- */
@@ -179,9 +195,73 @@ int ee_lndsr_main(
     if (allocate_mem_atmos_coeff(nbpts,&atmos_coef))
         ERROR("Allocating memory for atmos_coef", "main");
 
-//    printf("Compute Atmos Params with aot550=0.01\n"); fflush(stdout);
-//    update_atmos_coefs(&atmos_coef,ar_gridcell, &sixs_tables,line_ar, lut,input->nband, 1);
+    printf("Compute Atmos Params with aot550=0.01\n"); fflush(stdout);
+    update_atmos_coefs(&atmos_coef, ar_gridcell, &sixs_tables, line_ar, lut, nband, 1);
     
+    report_timer( "AR Computation Complete" );
+
+/* -------------------------------------------------------------------- */
+/*      Prepare working buffers for landsat resolution data.            */
+/* -------------------------------------------------------------------- */
+    int ***line_in = ee_PrepareLineIn( &tile_def, lut );
+    int **b6_line, *b6_line_buf;
+    int8 **qa_line, *qa_line_buf;
+    int il, is, ib;
+    
+    b6_line = (int**)calloc((size_t)(lut->ar_region_size.l),sizeof(int *));
+    if (b6_line == (int**)NULL)ERROR("allocating b6 line", "main");
+    b6_line_buf = (int*)calloc((size_t)(tile_def.size.s * lut->ar_region_size.l),sizeof(int));
+    if (b6_line_buf == (int*)NULL)ERROR("allocating b6 line buffer", "main");
+    for (il = 0; il < lut->ar_region_size.l; il++) {
+        b6_line[il]=b6_line_buf;
+        b6_line_buf += tile_def.size.s;
+    }
+    
+    qa_line = (int8**)calloc((size_t)(lut->ar_region_size.l),sizeof(int8 *));
+    if (qa_line == (int8**)NULL)ERROR("allocating qa line", "main");
+    qa_line_buf = (int8*)calloc((size_t)(tile_def.size.s*lut->ar_region_size.l),sizeof(int8));
+    if (qa_line_buf == (char*)NULL)ERROR("allocating qa line buffer", "main");
+    for (il = 0; il < lut->ar_region_size.l; il++) {
+        qa_line[il]=qa_line_buf;
+        qa_line_buf += tile_def.size.s;
+    }
+
+/* -------------------------------------------------------------------- */
+/*      Read input first time and compute clear pixels stats for        */
+/*      internal cloud screening                                        */
+/* -------------------------------------------------------------------- */
+    cld_diags_t cld_diags;
+
+/* allocate memory for cld_diags structure and clear sum and nb of obs */	
+    if (allocate_cld_diags(&cld_diags,CLDDIAGS_CELLHEIGHT_5KM, CLDDIAGS_CELLWIDTH_5KM, 
+                           tile_def.size.l,tile_def.size.s)) {
+        ERROR("couldn't allocate memory from cld_diags","main");
+    }
+
+    for (il = 0; il < tile_def.size.l; il++) {
+        float *atemp_line = (float *) anc_ATEMP + il * tile_def.size.s;
+
+        /* Read each input band */
+        for (ib = 0; ib < nband; ib++) {
+            for (is = 0; is < tile_def.size.s; is++) {
+                line_in[0][ib][is] = landsat_band[ib][il*tile_def.size.s+is];
+            }
+        }
+        
+        for (is = 0; is < tile_def.size.s; is++) {
+            b6_line[0][is] = thermal[il*tile_def.size.s+is];
+            qa_line[0][is] = lndcal_QA[il*tile_def.size.s+is];
+        }
+
+        /* Run Cld Screening Pass1 and compute stats */
+        if (!cloud_detection_pass1(lut, tile_def.size.s, il, line_in[0], 
+                                   qa_line[0], b6_line[0], atemp_line,
+                                   &cld_diags)) {
+            ERROR("running cloud detection pass 1", "main");
+        }
+    }
+
+    report_timer( "Cloud Detection Pass 1 Complete" );
     return 0;
 }
 
@@ -213,3 +293,89 @@ int ee_PrepareSpaceDef( Space_def_t *space_def, int utm_zone,
 
     return 0;
 }
+
+/************************************************************************/
+/*                          ee_PrepareLineAr()                          */
+/*                                                                      */
+/*      This produces an "int" line by line representation of the       */
+/*      aerosol values which is compatiable with what the other         */
+/*      lndsr code expects to receive.                                  */
+/************************************************************************/
+
+int ***ee_PrepareLineAr( Ar_gridcell_t *ar_gridcell, const short *aerosol ) {
+
+    int ***line_ar;
+    Img_coord_int_t ar_size;
+    int il, ib, is;
+    int *line_ar_buf;
+    int **line_ar_band_buf;
+
+    ar_size.l = ar_gridcell->nbrows;
+    ar_size.s = ar_gridcell->nbcols;
+
+    line_ar = (int ***)calloc((size_t)ar_size.l, sizeof(int **));
+    if (line_ar == (int ***)NULL) 
+        ERROR("allocating aerosol line buffer (a)", "ee_PrepareLineAr");
+
+    line_ar_band_buf = (int **)calloc((size_t)(ar_size.l * AERO_NB_BANDS), sizeof(int *));
+    if (line_ar_band_buf == (int **)NULL) 
+        ERROR("allocating aerosol line buffer (b)", "ee_PrepareLineAr");
+
+    line_ar_buf = (int *)calloc((size_t)(ar_size.l * ar_size.s * AERO_NB_BANDS), 
+                                sizeof(int));
+    if (line_ar_buf == (int *)NULL) 
+        ERROR("allocating aerosol line buffer (c)", "ee_PrepareLineAr");
+
+    for (il = 0; il < ar_size.l; il++) {
+        line_ar[il] = line_ar_band_buf;
+        line_ar_band_buf += AERO_NB_BANDS;
+        for (ib = 0; ib < AERO_NB_BANDS; ib++) {
+            line_ar[il][ib] = line_ar_buf;
+            line_ar_buf += ar_size.s;
+        }
+    }
+
+    return line_ar;
+}
+
+/************************************************************************/
+/*                          ee_PrepareLineIn()                          */
+/*                                                                      */
+/*      Prepare the "line_in" buffer which is per-band, per-line        */
+/*      pointers to an underlying int buffer but with only enough       */
+/*      lines to hold one swath of aerosol data at a time.              */
+/************************************************************************/
+int ***ee_PrepareLineIn( TileDef_t *tile_def, Lut_t *lut ) {
+
+    int ***line_in;
+    int il, ib, is;
+    int *line_in_buf;
+    int **line_in_band_buf;
+    Img_coord_int_t *size = &(tile_def->size);
+    const int bands = 5;
+
+    line_in = (int ***)calloc((size_t)size->l, sizeof(int **));
+    if (line_in == (int ***)NULL) 
+        ERROR("allocating line_in buffer (a)", "ee_PrepareLineIn");
+
+    line_in_band_buf = (int **)calloc((size_t)(size->l * bands), sizeof(int *));
+    if (line_in_band_buf == (int **)NULL) 
+        ERROR("allocating line_in buffer (b)", "ee_PrepareLineIn");
+
+    line_in_buf = (int *)calloc((size_t)(size->l * size->s * bands), 
+                                sizeof(int));
+    if (line_in_buf == (int *)NULL) 
+        ERROR("allocating line_in buffer (c)", "ee_PrepareLineIn");
+
+    for (il = 0; il < size->l; il++) {
+        line_in[il] = line_in_band_buf;
+        line_in_band_buf += bands;
+        for (ib = 0; ib < bands; ib++) {
+            line_in[il][ib] = line_in_buf;
+            line_in_buf += size->s;
+        }
+    }
+
+    return line_in;
+}
+

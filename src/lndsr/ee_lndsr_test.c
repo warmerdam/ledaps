@@ -65,6 +65,8 @@ int main(int argc, char **argv) {
     int input_offset_s=0, input_offset_l=0;
     int input_size_s=0, input_size_l=0, nband;
     short *band1, *band2, *band3, *band4, *band5, *band7;
+    short *thermal;
+    int8 *lndcal_QA;
 
     int utm_zone;
     double ul_x, ul_y, pixel_size;
@@ -174,6 +176,15 @@ int main(int argc, char **argv) {
     sprintf( filename, "%s/lndcal_band7", src_dir );
     band7 = (short *) ReadWholeFile(filename, 2*input_size_s*input_size_l);
     
+    sprintf( filename, "%s/thermal", src_dir );
+    thermal = (short *) ReadWholeFile(filename, 2*input_size_s*input_size_l);
+    
+    sprintf( filename, "%s/lndcal_QA", src_dir );
+    lndcal_QA = (int8 *) ReadWholeFile(filename, input_size_s*input_size_l);
+    
+    sprintf( filename, "%s/air", src_dir );
+    anc_ATEMP = (float *) ReadWholeFile(filename, 4*4*input_size_s*input_size_l);
+    
 /* -------------------------------------------------------------------- */
 /*      Read the ancillary data.                                        */
 /* -------------------------------------------------------------------- */
@@ -185,9 +196,6 @@ int main(int argc, char **argv) {
     
     sprintf( filename, "%s/pr_wtr", src_dir );
     anc_WV = (float *) ReadWholeFile(filename, 4*4*ar_size_s*ar_size_l);
-    
-    sprintf( filename, "%s/air", src_dir );
-    anc_ATEMP = (float *) ReadWholeFile(filename, 4*4*ar_size_s*ar_size_l);
     
     sprintf( filename, "%s/ozone", src_dir );
     anc_O3 = (float *) ReadWholeFile(filename, 4*ar_size_s*ar_size_l);
@@ -205,9 +213,10 @@ int main(int argc, char **argv) {
                            input_offset_s, input_offset_l,
                            input_size_s, input_size_l, 6 /* nband */,
                            band1, band2, band3, band4, band5, band7,
+                           thermal, lndcal_QA, anc_ATEMP,
                            utm_zone, ul_x, ul_y, pixel_size,
                            ar_size_s, ar_size_l,
-                           aerosol, anc_SP, anc_WV, anc_ATEMP, anc_O3, anc_dem);
+                           aerosol, anc_SP, anc_WV, anc_O3, anc_dem);
 
     if (error != 0) {
         printf( "Error in ee_lndsr_main()!\n" );
