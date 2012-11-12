@@ -1,16 +1,18 @@
 #!/bin/bash
 
-gdal_translate -a_srs WGS84 -a_ullr -181.25 91.25 178.75 -91.25 \
+ANC_BOUND="-181.25 91.25 178.75 -91.25"
+
+gdal_translate -a_srs WGS84 -a_ullr $ANC_BOUND \
   -unscale -ot Float32 \
   HDF4_SDS:UNKNOWN:"REANALYSIS_1999217.hdf":2 \
   REANALYSIS_1999217_slp.tif
 
-gdal_translate -a_srs WGS84 -a_ullr -181.25 91.25 178.75 -91.25 \
+gdal_translate -a_srs WGS84 -a_ullr $ANC_BOUND \
   -unscale -ot Float32 \
   HDF4_SDS:UNKNOWN:"REANALYSIS_1999217.hdf":3 \
   REANALYSIS_1999217_pr_wtr.tif
 
-gdal_translate -a_srs WGS84 -a_ullr -181.25 91.25 178.75 -91.25 \
+gdal_translate -a_srs WGS84 -a_ullr $ANC_BOUND \
   -unscale -ot Float32 \
   HDF4_SDS:UNKNOWN:"REANALYSIS_1999217.hdf":4 \
   REANALYSIS_1999217_air.tif
