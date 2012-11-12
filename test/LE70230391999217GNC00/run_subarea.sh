@@ -1,6 +1,7 @@
 #!/bin/bash
 
 lndsr lndsr.L71023039_03919990805.txt \
+	-debug \
 	-srcwin 2400 800 800 400 \
 	-check 2410 805  \
 	-check 2460 860  \
