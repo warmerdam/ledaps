@@ -35,4 +35,6 @@ bool cast_cloud_shadow(Lut_t *lut, int nsamp, int il_start, int ***line_in, int 
 bool dilate_cloud_mask(Lut_t *lut, int nsamp, char ***cloud_buf, int dilate_dist);
 bool dilate_shadow_mask(Lut_t *lut, int nsamp, char ***cloud_buf, int dilate_dist);
 
+void report_cld_diags(cld_diags_t *cld_diags);
+
 #endif

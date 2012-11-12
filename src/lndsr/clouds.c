@@ -854,3 +854,27 @@ int interpol_clddiags_1pixel(cld_diags_t *cld_diags, int img_line, int img_sampl
 
     return 0;
 }
+
+void report_cld_diags(cld_diags_t *cld_diags) {
+    int i, j;
+    printf( "cld_diags:\n" );
+    printf( "  nbrows=%d, nbcols=%d, cellheight=%d, cellwidth=%d\n",
+            cld_diags->nbrows, cld_diags->nbcols, 
+            cld_diags->cellheight, cld_diags->cellwidth );
+
+    for (i=0;i<cld_diags->nbrows;i++) {
+        for (j=0;j<cld_diags->nbcols;j++) {
+            int ipt = i * cld_diags->nbcols + j;
+
+            printf( "  %d,%d: avg_t6=%f, std_t6=%f, avg_b7=%f, std_b7=%f, airtemp=%f, nb_t6=%d\n", 
+                    i, j,
+                    cld_diags->avg_t6_clear[i][j],
+                    cld_diags->std_t6_clear[i][j],
+                    cld_diags->avg_b7_clear[i][j],
+                    cld_diags->std_b7_clear[i][j],
+                    cld_diags->airtemp_2m[i][j],
+                    cld_diags->nb_t6_clear[i][j] );
+        }
+    } 
+    
+}

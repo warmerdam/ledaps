@@ -261,6 +261,8 @@ int ee_lndsr_main(
         }
     }
 
+    report_cld_diags(&cld_diags);
+
     report_timer( "Cloud Detection Pass 1 Complete" );
     return 0;
 }

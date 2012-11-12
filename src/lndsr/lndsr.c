@@ -1017,6 +1017,9 @@ int main (int argc, const char **argv) {
 
     }
 
+    if (debug_flag)
+        report_cld_diags(&cld_diags);
+
     report_timer( "Cloud Detection Pass 1 Complete" );
 
     if (param->thermal_band) {
