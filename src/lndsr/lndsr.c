@@ -933,12 +933,25 @@ int main (int argc, const char **argv) {
         ratio_spres=1.;
         if ((nb_spres_anc > 0)&&(nb_spres_dem>0)) 
             ratio_spres=(float)((sum_spres_anc/nb_spres_anc)/(sum_spres_dem/nb_spres_dem));
-/*	printf("Ratio pressure %f\n",ratio_spres);*/
-        for (il_ar = 0; il_ar < lut->ar_size.l;il_ar++) 
-            for (is_ar=0;is_ar < lut->ar_size.s; is_ar++) 
+
+	printf("Ratio pressure %.15g\n",ratio_spres);
+
+        for (il_ar = 0; il_ar < lut->ar_size.l;il_ar++) {
+            for (is_ar=0;is_ar < lut->ar_size.s; is_ar++) {
                 if ((ar_gridcell.spres[il_ar*lut->ar_size.s+is_ar] > 0)&&(ar_gridcell.spres_dem[il_ar*lut->ar_size.s+is_ar] > 0))
                     /*             ar_gridcell.spres[il_ar*lut->ar_size.s+is_ar]=ar_gridcell.spres_dem[il_ar*lut->ar_size.s+is_ar]*ratio_spres; Vermote 11/23/2010*/
                     ar_gridcell.spres[il_ar*lut->ar_size.s+is_ar]=ar_gridcell.spres_dem[il_ar*lut->ar_size.s+is_ar]*ar_gridcell.spres[il_ar*lut->ar_size.s+is_ar]/1013.;
+
+                /* TODO(warmerdam): debugging */
+                if ( is_ar_check_pixel(is_ar, il_ar) ) {
+                    int ipt = il_ar*lut->ar_size.s+is_ar;
+
+                    printf( "  DEBUG: adjusted spres@%d [%d,%d] = %.15g\n", 
+                            ipt, is_ar, il_ar,
+                            ar_gridcell.spres[ipt] );
+                }
+            }
+        }
     }
 
     report_timer( "AR Ancillary Interpolation Complete" );
