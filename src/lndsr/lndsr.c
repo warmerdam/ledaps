@@ -1074,7 +1074,12 @@ int main (int argc, const char **argv) {
                 }
             }
 	}
+        if (debug_flag)
+            report_cld_diags(&cld_diags);
 	fill_cld_diags(&cld_diags);
+        if (debug_flag)
+            report_cld_diags(&cld_diags);
+
 #ifdef DEBUG_CLD
 	for (il=0;il<cld_diags.nbrows;il++) 
             for (is=0;is<cld_diags.nbcols;is++) 

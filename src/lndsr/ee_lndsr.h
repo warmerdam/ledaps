@@ -26,6 +26,12 @@
 #include "read_grib_tools.h"
 #include "sixs_runs.h"
 
+/* We hard code things to 4 layers of dayly ancillary data, 6 hours apart. */
+
+#define ANC_TIMERES 6.0 /* 6.0 hours time resolution for most ancillary layers*/
+#define ANC_NBLAYERS 4  /* 4 "time layers" for each ancillary layer */
+
+
 Ar_gridcell_t *ee_build_ar_gridcell(Lut_t *lut,
                                     Space_t *space,
                                     Input_meta_t *meta,

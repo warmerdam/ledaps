@@ -118,6 +118,19 @@ int ee_lndsr_main(
     if ( scene_gmt < 0.) scene_gmt=scene_gmt+24.;
 
 /* -------------------------------------------------------------------- */
+/*      For ancillary layers at four times of day, we figure out        */
+/*      which two layers the scene's time of day is between and a       */
+/*      coefficient indicating how much of each to use.                 */
+/* -------------------------------------------------------------------- */
+    double time_coef;
+    int pixels_ls = tile_def.size.s * tile_def.size.l;
+    int time_index = (int)(scene_gmt/ANC_TIMERES);
+    if (time_index >= (ANC_NBLAYERS-1))
+        time_index=ANC_NBLAYERS-2;
+    
+    time_coef= (double)(scene_gmt-time_index*ANC_TIMERES)/ANC_TIMERES;
+    
+/* -------------------------------------------------------------------- */
 /*      Build the ar_gridcell structure with ancillary data sampled     */
 /*      on the aerosol grid.                                            */
 /* -------------------------------------------------------------------- */
@@ -239,6 +252,8 @@ int ee_lndsr_main(
     }
 
     for (il = 0; il < tile_def.size.l; il++) {
+
+        // TODO(warmerdam): this implicitly takes time-of-day=0.0 - FIX
         float *atemp_line = (float *) anc_ATEMP + il * tile_def.size.s;
 
         /* Read each input band */
@@ -264,6 +279,78 @@ int ee_lndsr_main(
     report_cld_diags(&cld_diags);
 
     report_timer( "Cloud Detection Pass 1 Complete" );
+
+/* -------------------------------------------------------------------- */
+/*      Do some more work with the cloud diag(nostics?) setting air     */
+/*      temperature and some other values.                              */
+/* -------------------------------------------------------------------- */
+    for (il=0;il<cld_diags.nbrows;il++) {
+        int is_ls, il_ls;
+
+        il_ls = (int) (il*cld_diags.cellheight+cld_diags.cellheight/2.);
+        if (il_ls >= tile_def.size.l )
+            il_ls = tile_def.size.l-1;
+
+
+        for (is=0;is<cld_diags.nbcols;is++) {
+
+            img.s=is*cld_diags.cellwidth+cld_diags.cellwidth/2.;
+            is_ls = (int) (is*cld_diags.cellwidth+cld_diags.cellwidth/2.);
+            if (is_ls >= tile_def.size.s )
+                is_ls = tile_def.size.s-1;
+
+            /*
+             * Unlike the original, we will just pull the ATEMP value
+             * from the landsat resolution layer. 
+             * TODO(warmerdam): Add time-of-day interpolation.
+             */
+
+            cld_diags.airtemp_2m[il][is]=
+                (1.0-time_coef)*anc_ATEMP[il_ls * tile_def.size.s + is_ls
+                                          + time_index * pixels_ls]
+                + time_coef*anc_ATEMP[il_ls * tile_def.size.s + is_ls
+                                      + (time_index+1) * pixels_ls];
+
+            if (cld_diags.nb_t6_clear[il][is] > 0) {
+                float sum_value,sumsq_value;
+
+                sum_value=cld_diags.avg_t6_clear[il][is];
+                sumsq_value=cld_diags.std_t6_clear[il][is];
+                cld_diags.avg_t6_clear[il][is] = sum_value/cld_diags.nb_t6_clear[il][is];
+                if (cld_diags.nb_t6_clear[il][is] > 1) {
+/**
+   cld_diags.std_t6_clear[il][is] = (sumsq_value+cld_diags.nb_t6_clear[il][is]*cld_diags.avg_t6_clear[il][is]*cld_diags.avg_t6_clear[il][is]-2.*cld_diags.avg_t6_clear[il][is]*sum_value)/(cld_diags.nb_t6_clear[il][is]-1);
+   cld_diags.std_t6_clear[il][is]=sqrt(fabs(cld_diags.std_t6_clear[il][is]));
+**/
+                    cld_diags.std_t6_clear[il][is] = (sumsq_value-(sum_value*sum_value)/cld_diags.nb_t6_clear[il][is])/(cld_diags.nb_t6_clear[il][is]-1);
+                    cld_diags.std_t6_clear[il][is]=sqrt(fabs(cld_diags.std_t6_clear[il][is]));
+
+                } else 
+                    cld_diags.std_t6_clear[il][is] = 0.;
+                sum_value=cld_diags.avg_b7_clear[il][is];
+                sumsq_value=cld_diags.std_b7_clear[il][is];
+                cld_diags.avg_b7_clear[il][is] = sum_value/cld_diags.nb_t6_clear[il][is];
+                if (cld_diags.nb_t6_clear[il][is] > 1) {
+                    cld_diags.std_b7_clear[il][is] = (sumsq_value-(sum_value*sum_value)/cld_diags.nb_t6_clear[il][is])/(cld_diags.nb_t6_clear[il][is]-1);
+                    cld_diags.std_b7_clear[il][is]=sqrt(fabs(cld_diags.std_t6_clear[il][is]));
+                } else
+                    cld_diags.std_b7_clear[il][is]=0;
+            } else {
+                cld_diags.avg_t6_clear[il][is]=-9999.;
+                cld_diags.avg_b7_clear[il][is]=-9999.;
+                cld_diags.std_t6_clear[il][is]=-9999.;
+                cld_diags.std_b7_clear[il][is]=-9999.;
+            }
+        }
+    }
+    report_cld_diags(&cld_diags);
+
+    fill_cld_diags(&cld_diags);
+
+    report_cld_diags(&cld_diags);
+
+    report_timer( "Thermal Cloud Diag Complete" );
+
     return 0;
 }
 

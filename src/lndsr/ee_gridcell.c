@@ -9,10 +9,6 @@
 
 #include "ee_lndsr.h"
 
-#define ANC_TIMERES 6.0 /* 6.0 hours time resolution for most ancillary layers*/
-#define ANC_NBLAYERS 4  /* 4 "time layers" for each ancillary layer */
-
-
 Ar_gridcell_t *ee_build_ar_gridcell(Lut_t *lut,
                                     Space_t *space,
                                     Input_meta_t *meta,
@@ -80,7 +76,6 @@ Ar_gridcell_t *ee_build_ar_gridcell(Lut_t *lut,
         for (is_ar=0;is_ar < lut->ar_size.s; is_ar++) {
             float tmpflt_arr[4],tmpflt;
             double coef;
-            int tmpint;
             int jday;
             int ipt = is_ar + il_ar * lut->ar_size.s;
             int layer_size = lut->ar_size.s * lut->ar_size.l;
@@ -96,7 +91,7 @@ Ar_gridcell_t *ee_build_ar_gridcell(Lut_t *lut,
             ar_gridcell->rel_az[ipt]=meta->sun_az*DEG;
 
             int time_index = (int)(scene_gmt/ANC_TIMERES);
-            if (time_index >= tmpint>=(ANC_NBLAYERS-1))
+            if (time_index >= (ANC_NBLAYERS-1))
 		time_index=ANC_NBLAYERS-2;
 
             coef=(double)(scene_gmt-time_index*ANC_TIMERES)/ANC_TIMERES;
