@@ -32,7 +32,7 @@ bool cloud_detection_pass2(Lut_t *lut, int nsamp, int il, int **line_in, int8 *q
 		  cld_diags_t *cld_diags,char *ddv_line);
 bool cast_cloud_shadow(Lut_t *lut, int nsamp, int il_start, int ***line_in, int **b6_line,
 		  cld_diags_t *cld_diags,char ***cloud_buf, Ar_gridcell_t *ar_gridcell,float pixel_size,float adjust_north);
-bool dilate_cloud_mask(Lut_t *lut, int nsamp, char ***cloud_buf, int dilate_dist);
+bool dilate_cloud_mask(Lut_t *lut, int nsamp, char ***cloud_buf, int dilate_dist, int il_region);
 bool dilate_shadow_mask(Lut_t *lut, int nsamp, char ***cloud_buf, int dilate_dist);
 
 void report_cld_diags(cld_diags_t *cld_diags);

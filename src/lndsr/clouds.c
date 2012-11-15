@@ -106,6 +106,13 @@ bool cloud_detection_pass1(Lut_t *lut, int nsamp, int il, int **line_in, int8 *q
                     ndvi=0.01;
                 water=(ndvi < 0)||((((ndvi>0)&&(ndvi<0.1))||(rho4<0.05))&&(rho5<0.02));
 
+                if (is_check_pixel(is,il)) {
+                    printf( "  cld_pass1(%d,%d): water=%d, C1=%d,C2=%d,C3=%d,atemp=%.15g\n",
+                            is, il, 
+                            water, C1, C2, C3, 
+                            atemp_line[is] );
+                }
+
                 if (!water) { /* if not water */
                     if ((t6 > (atemp_line[is]-20.)) && (!C5)) { 
                         if (!((C1||C3)&&C2&&C4)) { /* clear */
@@ -162,6 +169,18 @@ bool cloud_detection_pass2(Lut_t *lut, int nsamp, int il, int **line_in, int8 *q
     if (il_ar >= lut->ar_size.l)
         il_ar=lut->ar_size.l-1;
     for (is = 0; is < nsamp; is++) {
+        if (is_check_pixel(is, il)) {
+            printf( "cloud_detection_pass2(%d,%d): line_in=%d,%d,%d,%d,%d, qa=%d, b6=%d, ddv=%x\n",
+                    is, il, 
+                    line_in[0][is], 
+                    line_in[1][is], 
+                    line_in[2][is], 
+                    line_in[3][is], 
+                    line_in[4][is], 
+                    qa_line[is], 
+                    b6_line[is], 
+                    ddv_line[is] );
+        }
     	loc.s = is;
         cld_col=is/cld_diags->cellwidth;
         is_ar=is/lut->ar_region_size.s;
@@ -314,6 +333,12 @@ bool cloud_detection_pass2(Lut_t *lut, int nsamp, int il, int **line_in, int8 *q
                 else
                     ndvi=0.01;
                 water=(ndvi < 0)||((((ndvi>0)&&(ndvi<0.1))||(rho4<0.05))&&(rho5<0.02));
+                if (is_check_pixel(is, il)) {
+                    printf("  rho=%.15g,%.15g,%.15g,%.15g,%.15g,%.15g\n", 
+                           rho1, rho2, rho3, rho4, rho5, rho7 );
+                    printf("  atemp_ancillary=%.15g, temp_b6_clean=%.15g, avg_b7_clear=%.15g\n", 
+                           atemp_ancillary, temp_b6_clear, avg_b7_clear);
+                }
                 if (thermal_band) {
                     if (!water) { /* if not water */
                         ddv_line[is] |= 0x10;
@@ -345,7 +370,7 @@ bool cloud_detection_pass2(Lut_t *lut, int nsamp, int il, int **line_in, int8 *q
 }
 
 
-bool dilate_cloud_mask(Lut_t *lut, int nsamp, char ***cloud_buf, int dilate_dist) {
+bool dilate_cloud_mask(Lut_t *lut, int nsamp, char ***cloud_buf, int dilate_dist, int il_region) {
 /**
    use ddv_line to store internal cloud screening info
    bit 2 = adjacent cloud 1=yes 0=no
@@ -382,6 +407,12 @@ bool dilate_cloud_mask(Lut_t *lut, int nsamp, char ***cloud_buf, int dilate_dist
                                     cloud_buf[buf_ind][il_adj][is_adj] &= 0xfb; /* reset adjacent cloud bit */
                                     cloud_buf[buf_ind][il_adj][is_adj] &= 0xbf; /* reset shadow bit */
                                     cloud_buf[buf_ind][il_adj][is_adj] |= 0x04; /* set adjacent cloud bit */
+
+                                    int il_actual = il_adj + (buf_ind-1) * lut->ar_region_size.l + il_region;
+                                    if (is_check_pixel(is_adj, il_actual)) {
+                                        printf( "  set adjacent [%d,%d] = %x, buf_ind=%d\n", 
+                                                is, il_actual, cloud_buf[buf_ind][il_adj][is_adj], buf_ind );
+                                    }
                                 }
                             }
                         }

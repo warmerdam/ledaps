@@ -4,7 +4,6 @@
 #include "const.h"
 #include "sixs_runs.h"
 
-extern int is_check_pixel(int, int);
 extern void report_atmos_coef( atmos_t *atmos_coef, int ib, int i2 );
 
 extern atmos_t atmos_coef;

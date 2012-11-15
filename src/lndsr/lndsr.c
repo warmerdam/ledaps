@@ -1145,7 +1145,7 @@ int main (int argc, const char **argv) {
         }
 	if (param->thermal_band) {
             /* Cloud Mask Dilation : 5 pixels */
-            if (!dilate_cloud_mask(lut, input->size.s, ptr_rot_cld, 5))
+            if (!dilate_cloud_mask(lut, input->size.s, ptr_rot_cld, 5, il_start))
       		ERROR("running cloud mask dilation", "main");
 
             /* Cloud shadow */
@@ -1155,6 +1155,19 @@ int main (int argc, const char **argv) {
             /* Dilate Cloud shadow */
             dilate_shadow_mask(lut, input->size.s, ptr_rot_cld, 5);
 	}
+
+        if (debug_flag && il_ar > 0) {
+            for (il = il_start-lut->ar_region_size.l, il_region = 0; 
+                 il < (il_end + 1) && il_region < lut->ar_region_size.l; 
+                 il++, il_region++) {
+                for (is = 0; is < input->size.s; is++) {
+                    if (is_check_pixel(is, il)) {
+                        printf( "  cld_mask[%d,%d] = %x\n", 
+                                is, il, ptr_rot_cld[0][il_region][is] );
+                    }
+                }
+            }
+        }
 /***
     Save cloud and cloud shadow in temporary file
 ***/
