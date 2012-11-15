@@ -56,7 +56,7 @@ def compare_metadata(golden_md, new_md, id):
     if ledaps_metadata_ignore(key):
       pass
     elif not new_md.has_key(key):
-      print 'New %s metadata lacks key' % (id, key)
+      print 'New %s metadata lacks key "%s"' % (id, key)
       found_diff += 1
     elif new_md[key] != golden_md[key]:
       print 'Metadata value difference for key "' + key + '"'
