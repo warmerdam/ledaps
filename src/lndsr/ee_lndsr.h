@@ -51,7 +51,8 @@ int ee_lndsr_main(
     short *band1, short *band2, short *band3, 
     short *band4, short *band5, short *band7, 
     const short *thermal, const int8 *lndcal_QA, 
-    const float *anc_ATEMP,
+    const float *anc_ATEMP, const char *csm_mask,
+    short *atmos_opacity, short *lndsr_QA,
 
     int utm_zone, 
     double ul_x, double ul_y, double pixel_size,

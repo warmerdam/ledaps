@@ -73,7 +73,8 @@ def write_parms(filename, parm_list):
 ar_subsample = 40
 src_cal='../lndcal.L71023039_03919990805.hdf'
 src_th='../lndth.L71023039_03919990805.hdf'
-srcwin=(2400,800,800,400)
+src_csm='../lndcsm.L71023039_03919990805.hdf'
+srcwin=(1200,3600,800,400)
 
 (full_input_size, srs, full_gt) = extract_cal_info(src_cal)
 
@@ -98,6 +99,7 @@ aerosol_geotransform = (win_gt[0],
 
 extract_cal_bands(srcwin, src_cal)
 extract_lndcal_QA(srcwin, src_cal, srs, win_gt)
+extract_subwin(src_csm, 'csm', srcwin, 'Byte')
 extract_subwin(src_th, 'thermal', srcwin, 'Int16')
 
 aerosol_size = (srcwin[2]/ar_subsample, srcwin[3]/ar_subsample)

@@ -50,6 +50,29 @@ static void *ReadWholeFile( const char *filename, long expected_size ) {
 }
 
 /************************************************************************/
+/*                          WriteRasterFile()                           */
+/************************************************************************/
+
+static void WriteRasterFile( const char *filename, short *data,
+                             int size_s, int size_l ) {
+
+    FILE *fp = fopen(filename, "wb");
+    long size = size_s * size_l * sizeof(short);
+
+    if( fp == NULL ) {
+        perror(filename);
+        exit(2);
+    }
+
+    if (fwrite(data, size, 1, fp) != 1) {
+        perror("fread");
+        exit(2);
+    }
+
+    fclose(fp);
+}
+
+/************************************************************************/
 /*                                main()                                */
 /************************************************************************/
 int main(int argc, char **argv) {
@@ -67,6 +90,7 @@ int main(int argc, char **argv) {
     short *band1, *band2, *band3, *band4, *band5, *band7;
     short *thermal;
     int8 *lndcal_QA;
+    char *csm_mask;
 
     int utm_zone;
     double ul_x, ul_y, pixel_size;
@@ -182,6 +206,9 @@ int main(int argc, char **argv) {
     sprintf( filename, "%s/lndcal_QA", src_dir );
     lndcal_QA = (int8 *) ReadWholeFile(filename, input_size_s*input_size_l);
     
+    sprintf( filename, "%s/csm", src_dir );
+    csm_mask = (int8 *) ReadWholeFile(filename, input_size_s*input_size_l);
+    
     sprintf( filename, "%s/air", src_dir );
     anc_ATEMP = (float *) ReadWholeFile(filename, 4*4*input_size_s*input_size_l);
     
@@ -204,6 +231,12 @@ int main(int argc, char **argv) {
     anc_dem = (float *) ReadWholeFile(filename, 4*ar_size_s*ar_size_l);
 
 /* -------------------------------------------------------------------- */
+/*      Allocate additional output arrays.                              */
+/* -------------------------------------------------------------------- */
+    short *atmos_opacity = (short *) calloc(input_size_s*input_size_l, 2);
+    short *lndsr_QA = (short *) calloc(input_size_s*input_size_l, 2);
+
+/* -------------------------------------------------------------------- */
 /*      Invoke the mainline.                                            */
 /* -------------------------------------------------------------------- */
     int error;
@@ -213,7 +246,8 @@ int main(int argc, char **argv) {
                            input_offset_s, input_offset_l,
                            input_size_s, input_size_l, 6 /* nband */,
                            band1, band2, band3, band4, band5, band7,
-                           thermal, lndcal_QA, anc_ATEMP,
+                           thermal, lndcal_QA, anc_ATEMP, csm_mask,
+                           atmos_opacity, lndsr_QA,
                            utm_zone, ul_x, ul_y, pixel_size,
                            ar_size_s, ar_size_l,
                            aerosol, anc_SP, anc_WV, anc_O3, anc_dem);
@@ -225,5 +259,20 @@ int main(int argc, char **argv) {
 /* -------------------------------------------------------------------- */
 /*      Write out the results.                                          */
 /* -------------------------------------------------------------------- */
+    sprintf( filename, "%s/lndsr_band1", src_dir );
+    WriteRasterFile(filename, band1, input_size_s, input_size_l);
+    sprintf( filename, "%s/lndsr_band2", src_dir );
+    WriteRasterFile(filename, band2, input_size_s, input_size_l);
+    sprintf( filename, "%s/lndsr_band3", src_dir );
+    WriteRasterFile(filename, band3, input_size_s, input_size_l);
+    sprintf( filename, "%s/lndsr_band4", src_dir );
+    WriteRasterFile(filename, band4, input_size_s, input_size_l);
+    sprintf( filename, "%s/lndsr_band5", src_dir );
+    WriteRasterFile(filename, band5, input_size_s, input_size_l);
+    sprintf( filename, "%s/lndsr_atmos_opacity", src_dir );
+    WriteRasterFile(filename, atmos_opacity,  input_size_s, input_size_l);
+    sprintf( filename, "%s/lndsr_QA", src_dir );
+    WriteRasterFile(filename, lndsr_QA, input_size_s, input_size_l);
+    
     exit(0);
 }
