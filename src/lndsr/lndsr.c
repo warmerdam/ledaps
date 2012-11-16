@@ -235,7 +235,8 @@ int main (int argc, const char **argv) {
         }
     }
 
-    argc = 2;
+    if (argc > 2)
+        argc = 2;
 
     /* adjust check pixels to be relative to subwindow */
     if( tile_def != NULL) {
