@@ -39,10 +39,12 @@
 
 #include <math.h>
 
+#ifndef PI
 #ifndef M_PI
 #define PI (3.141592653589793238)
 #else
 #define PI (M_PI)
+#endif
 #endif
 
 #define TWO_PI (2.0 * PI)
