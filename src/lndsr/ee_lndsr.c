@@ -306,7 +306,6 @@ int ee_lndsr_main(
             /*
              * Unlike the original, we will just pull the ATEMP value
              * from the landsat resolution layer. 
-             * TODO(warmerdam): Add time-of-day interpolation.
              */
 
             cld_diags.airtemp_2m[il][is]=
@@ -432,10 +431,14 @@ int ee_lndsr_main(
             }
             if (thermal != NULL) {
                 /* Run Cld Screening Pass2 */
-                if (!cloud_detection_pass2(lut, tile_def.size.s, il, line_in[il_region], qa_line[il_region], b6_line[il_region], &cld_diags , ptr_rot_cld[1][il_region]))
+                if (!cloud_detection_pass2(lut, tile_def.size.s, il, line_in[il_region], 
+                                           qa_line[il_region], b6_line[il_region], 
+                                           &cld_diags , ptr_rot_cld[1][il_region]))
                     ERROR("running cloud detection pass 2", "main");
             } else {
-                if (!cloud_detection_pass2(lut, tile_def.size.s, il, line_in[il_region], qa_line[il_region], NULL, &cld_diags , ptr_rot_cld[1][il_region]))
+                if (!cloud_detection_pass2(lut, tile_def.size.s, il, line_in[il_region], 
+                                           qa_line[il_region], NULL, 
+                                           &cld_diags , ptr_rot_cld[1][il_region]))
                     ERROR("running cloud detection pass 2", "main");
             }
         }
@@ -446,7 +449,9 @@ int ee_lndsr_main(
       		ERROR("running cloud mask dilation", "main");
 
             /* Cloud shadow */
-            if (!cast_cloud_shadow(lut, tile_def.size.s, il_start, line_in, b6_line, &cld_diags,ptr_rot_cld,ar_gridcell,space_def.pixel_size,adjust_north))
+            if (!cast_cloud_shadow(lut, tile_def.size.s, il_start, line_in, b6_line, 
+                                   &cld_diags, ptr_rot_cld, ar_gridcell, 
+                                   space_def.pixel_size, adjust_north))
       		ERROR("running cloud shadow detection", "main");
 
             /* Dilate Cloud shadow */
@@ -513,8 +518,8 @@ int ee_lndsr_main(
             }
         }
 
-        if (!Ar(il_ar, lut, &(tile_def.size), line_in, csm_mask != NULL, mask_line, ddv_line, line_ar[il_ar], 
-                NULL, NULL, ar_gridcell, &sixs_tables, true))
+        if (!Ar(il_ar, lut, &(tile_def.size), line_in, csm_mask != NULL, mask_line, 
+                ddv_line, line_ar[il_ar], NULL, NULL, ar_gridcell, &sixs_tables, true))
             RETURN_ERROR("Ar()", "main", 1);
     }
 
@@ -656,7 +661,8 @@ int ee_lndsr_main(
             t6=b6_line[0][is]/100.+273.;
             t6s_seuil=280.+(1000.*0.01);
 /*		printf ("this is anom %d\n",anom);*/
-            if (( ( anom > 300 ) && ( line_out[4][is] > 300) && ( t6 < t6s_seuil) ) || ( (line_out[2][is] > 5000) && ( t6 < t6s_seuil)))
+            if (( ( anom > 300 ) && ( line_out[4][is] > 300) && ( t6 < t6s_seuil) ) 
+                || ( (line_out[2][is] > 5000) && ( t6 < t6s_seuil)))
             {
                 line_out[lut->nband+1][is] |= 0x0100;  /* set internal cloud mask bit */
 /*		printf ("this is anom >300 and temperature %d %f\n",anom,t6);*/
