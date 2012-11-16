@@ -83,12 +83,12 @@
 
 /* Prototypes for initializing the GCTP projections */
 
-int for_init(int proj_num, int zone, double *proj_param, int sphere,
-             char *file27, char *file83, int *iflag, 
-             int (*for_trans[MAX_PROJ + 1])());
-int inv_init(int proj_num, int zone, double *proj_param, int sphere,
-             char *file27, char *file83, int *iflag, 
-             int (*inv_trans[MAX_PROJ + 1])());
+void for_init(long proj_num, long zone, double *proj_param, long sphere,
+              char *file27, char *file83, long *iflag, 
+	      long (*for_trans[MAX_PROJ + 1])());
+void inv_init(long proj_num, long zone, double *proj_param, long sphere,
+              char *file27, char *file83, long *iflag, 
+	      long (*inv_trans[MAX_PROJ + 1])());
 
 /* Functions */
 
@@ -126,10 +126,10 @@ Space_t *SetupSpace(Space_def_t *space_def)
   Space_t *this;
   char file27[28] = "FILE27";
   char file83[28] = "FILE83";
-  int (*for_trans[MAX_PROJ + 1])();
-  int (*inv_trans[MAX_PROJ + 1])();
+  long (*for_trans[MAX_PROJ + 1])();
+  long (*inv_trans[MAX_PROJ + 1])();
   int ip;
-  int iflag;
+  long iflag;
 
   /* Verify some of the space definition parameters */
   

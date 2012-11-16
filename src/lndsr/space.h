@@ -140,9 +140,9 @@ typedef struct {
 
 typedef struct {
   Space_def_t def;       /* Space definition structure */
-  int (*for_trans)(double lat, double lon, double *x, double *y);
+  long (*for_trans)(double lat, double lon, double *x, double *y);
                          /* Forward transformation function call */
-  int (*inv_trans)(double x, double y, double *lat, double *lon);
+  long (*inv_trans)(double x, double y, double *lat, double *lon);
                          /* Inverse transformation function call */
   double cos_orien;      /* Cosine of the orientation angle */
   double sin_orien;      /* Sine of the orientation angle */
