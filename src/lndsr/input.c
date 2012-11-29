@@ -150,7 +150,7 @@ Input_t *OpenInput(char *file_name, TileDef_t *tile_def)
 
   /* Create the Input data structure */
 
-  this = (Input_t *)malloc(sizeof(Input_t));
+  this = (Input_t *)calloc(1,sizeof(Input_t));
   if (this == (Input_t *)NULL) 
     RETURN_ERROR("allocating Input data structure", "OpenInput", 
                  (Input_t *)NULL);
@@ -381,7 +381,7 @@ InputMask_t *OpenInputMask(char *file_name, TileDef_t *tile_def)
 
   /* Create the Input data structure */
 
-  this = (InputMask_t *)malloc(sizeof(InputMask_t));
+  this = (InputMask_t *)calloc(1,sizeof(InputMask_t));
   if (this == (InputMask_t *)NULL) 
     RETURN_ERROR("allocating Input data structure", "OpenInput", 
                  (InputMask_t *)NULL);
