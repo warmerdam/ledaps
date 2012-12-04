@@ -26,7 +26,7 @@
 #include "read_grib_tools.h"
 #include "sixs_runs.h"
 
-/* We hard code things to 4 layers of dayly ancillary data, 6 hours apart. */
+/* We hard code things to 4 layers of daily ancillary data, 6 hours apart. */
 
 #define ANC_TIMERES 6.0 /* 6.0 hours time resolution for most ancillary layers*/
 #define ANC_NBLAYERS 4  /* 4 "time layers" for each ancillary layer */
@@ -73,4 +73,3 @@ int ***ee_PrepareLineAr( Ar_gridcell_t *ar_gridcell, const short *aerosol );
 int ***ee_PrepareLineIn( TileDef_t *tile_def, Lut_t *lut );
 
 #endif /* ndef LNDSR_EE_H */
-

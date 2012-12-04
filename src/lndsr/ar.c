@@ -1047,7 +1047,7 @@ int read_ar_results_from_file(char *filename, Ar_gridcell_t *ar_gridcell,
     }
     
     if (sds.rank != 2 ) {
-        fprintf( stderr, "Size mismatch on aerosaol file.\n" );
+        fprintf( stderr, "Size mismatch on aerosol file.\n" );
         return 0;
     }
 

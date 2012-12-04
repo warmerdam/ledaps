@@ -1282,13 +1282,6 @@ int main (int argc, const char **argv) {
     fclose(fd_ar_diags);
 #endif
 
-#ifdef SAVE_AR_RESULTS
-    if (!loaded_ar_results) {
-        write_ar_results_to_file("PreGapFillingAerosol.hdf", &ar_gridcell, 
-                                 line_ar);
-    }
-#endif
-
     report_timer( "Cloud Shadow Mask 2nd Pass Complete" );
 
     /***
@@ -1649,4 +1642,3 @@ void swapbytes(void *val,int nbbytes) {
     for (i=0;i<nbbytes;i++)
         tmpptr1[i]=tmpptr2[nbbytes-i-1];
 }
-

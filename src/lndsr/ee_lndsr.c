@@ -1,5 +1,5 @@
 /**
- * lndsr_ee.c - EarthEngine callable "tile" callable version of lndsr.c main.
+ * lndsr_ee.c - EarthEngine "tile" callable version of lndsr.c main.
  *
  * Closely derived from original lndsr.c and related code.
  *
@@ -713,7 +713,7 @@ int ee_PrepareSpaceDef( Space_def_t *space_def, int utm_zone,
     space_def->zone = utm_zone;
     space_def->zone_set = true;
 
-    space_def->sphere = 12; /* ? */
+    space_def->sphere = 12; /* WGS84 */
 
     space_def->pixel_size = pixel_size;
     space_def->ul_corner.x = ul_x; /* TODO(warmerdam): center/corner check? */
@@ -816,4 +816,3 @@ int ***ee_PrepareLineIn( TileDef_t *tile_def, Lut_t *lut ) {
 
     return line_in;
 }
-
