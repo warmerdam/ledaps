@@ -21,16 +21,50 @@ atmos_t atmos_coef;
  * This function is intended to be called from EarthEngine and should
  * only take arguments easily provided by EarthEngine via a simple SWIG
  * wrapped interface.
- * 
- * @param ar_size_s aerosol array width in pixels
- * @param ar_size_l aerosol array height in lines
- * @param aerosol aerosol values (corresponds to line_ar in lndsr)
- * @param anc_SP SP (slope) on aerosol grid x 4 times of day
- * @param anc_WV water vapour on aerosol grid x 4 times of day
- * @param anc_ATEMP air temperature on aerosol grid x 4 times of day
- * @param anc_O3 ozone on aerosol grid 
- * @param anc_dem elevation in meters on aerosol grid, -9999 for nodata.
- * 
+ *
+ * The algorithm operates on a tile region on the landsat scene.  All
+ * arrays marked with (FRT) are arrays containing one value per pixel in
+ * the tile and are size input_size_s * input_size_l.
+ *
+ * The algorithm uses low resolution ancillary data for some calculations
+ * including aerosol, NCEP parameters, ozone and DEM.  These low resolution
+ * products are at 1/40th resolution compared to the landsat scene (1200m
+ * per pixel as opposed to 30m per pixel).  Some of these low resolution tiles
+ * are marked (LRT) indicating they are low resolution tiles
+ * (ar_size_s*ar_size_l).  Some are marked (LRT4) indicating they are
+ * represents four daily time slices of the variable and thus are
+ * (ar_size_s*ar_size_l*4) in size (at 0, 6, 12 and 18 hundred hours).
+ *
+ * @param full_input_size_s Landsat scene width in pixels
+ * @param full_input_size_l Landsat scene height in lines
+ * @param input_offset_s offset to tile to be processed in pixels
+ * @param input_offset_l offset to tile to be processed in lines
+ * @param input_size_s width of tile to be processed in pixels
+ * @param input_size_l height of tile to be processed in lines
+ * @param band1 tile of pixel data as input and output (FRT)
+ * @param band2 tile of pixel data as input and output (FRT)
+ * @param band3 tile of pixel data as input and output (FRT)
+ * @param band4 tile of pixel data as input and output (FRT)
+ * @param band5 tile of pixel data as input and output (FRT)
+ * @param band7 tile of pixel data as input and output (FRT)
+ * @param thermal tile of input thermal (band 6) pixel data as input (FRT)
+ * @param lndcal_QA input mask of valid tile pixels to operate on (FRT)
+ * @param csm_mask cloud mask tile as input from lndcsm program (FRT)
+ * @param atmos_opacity output atmospheric opacity for tile (FRT)
+ * @param lndsr_QA output quality mask values for tile (FRT)
+ * @param utm_zone the UTM zone of the landsat scene
+ * @param ul_x the upper left corner easting of the scene in UTM
+ * @param ul_y the upper left corner northing of the scene in UTM
+ * @param pixel_size size of a landsat pixel in meters (always 30.0)
+ * @param ar_size_s aerosol (low resolution) array width in pixels
+ * @param ar_size_l aerosol (low resolution) array height in lines
+ * @param aerosol aerosol values (corresponds to line_ar in lndsr) (LRT)
+ * @param anc_SP SP (slope) on aerosol grid x 4 times of day (LRT4)
+ * @param anc_WV water vapour on aerosol grid x 4 times of day (LRT4)
+ * @param anc_ATEMP air temperature on full res grid x 4 times of day (FRT4)
+ * @param anc_O3 ozone on aerosol grid (LRT)
+ * @param anc_dem elevation in meters on aerosol grid, -9999 for nodata. (LRT)
+ *
  * @return zero on success, non-zero on failure.
  */
 int ee_lndsr_main(
@@ -40,19 +74,20 @@ int ee_lndsr_main(
     int full_input_size_s, int full_input_size_l,
     int input_offset_s, int input_offset_l,
     int input_size_s, int input_size_l, int nband,
-    short *band1, short *band2, short *band3, 
-    short *band4, short *band5, short *band7, 
+    short *band1, short *band2, short *band3,
+    short *band4, short *band5, short *band7,
     const short *thermal, const int8* lndcal_QA,
-    const float *anc_ATEMP, const char *csm_mask,
+    const char *csm_mask,
     short *atmos_opacity, short *lndsr_QA,
 
-    int utm_zone, 
+    int utm_zone,
     double ul_x, double ul_y, double pixel_size,
 
     int ar_size_s, int ar_size_l,
     const short *aerosol,
     const float *anc_SP,
     const float *anc_WV,
+    const float *anc_ATEMP,
     const float *anc_O3,
     const float *anc_dem)
 

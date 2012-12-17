@@ -10,7 +10,7 @@ int ee_lndsr_main(
     short *band1, short *band2, short *band3,
     short *band4, short *band5, short *band7,
     const short *thermal, const int8 *lndcal_QA,
-    const float *anc_ATEMP, const char *csm_mask,
+    const char *csm_mask,
     short *atmos_opacity, short *lndsr_QA,
 
     int utm_zone,
@@ -20,6 +20,7 @@ int ee_lndsr_main(
     const short *aerosol,
     const float *anc_SP,
     const float *anc_WV,
+    const float *anc_ATEMP,
     const float *anc_O3,
     const float *anc_dem);
 
