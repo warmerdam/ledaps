@@ -409,7 +409,9 @@ void sun_angles (short jday,float gmt,float flat,float flon,float *ts,float *fs)
  * make sure the SIXS application exists in the path supplied.
  */
 #define MAX_SIXS_PATH_LEN 2048
+#ifndef SIXS_APP
 #define SIXS_APP   "sixsV1.0B"
+#endif
 static char sixs_path[MAX_SIXS_PATH_LEN] = "";
 void set_sixs_path_from(const char *path)
 {
@@ -525,4 +527,3 @@ void report_atmos_coef( atmos_t *atmos_coef, int ib, int ic ) {
             atmos_coef->S_r[ib][ic],
             atmos_coef->rho_r[ib][ic] );
 }
-
