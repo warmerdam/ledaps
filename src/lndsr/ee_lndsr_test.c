@@ -100,6 +100,8 @@ int main(int argc, char **argv) {
     float *anc_SP, *anc_WV, *anc_ATEMP, *anc_O3, *anc_dem;
 
     FILE *fpParms;
+    FILE *fpSixs;
+    char *sixs_coefs;
 
 /* -------------------------------------------------------------------- */
 /*      Parse arguments.                                                */
@@ -132,7 +134,12 @@ int main(int argc, char **argv) {
     r = fgets(line, sizeof(line), fpParms);
     sixs_filename = strdup(line);
     sixs_filename[strlen(sixs_filename)-1] = '\0'; /* trim newline */
-    
+
+    sixs_coefs = (char *) malloc(40000);
+    fpSixs = fopen(sixs_filename,"r");
+    fread(sixs_coefs, 1, 40000, fpSixs);
+    fclose(fpSixs);
+
     r = fgets(line, sizeof(line), fpParms);
     full_input_size_s = atoi(line);
 
@@ -241,7 +248,7 @@ int main(int argc, char **argv) {
 /* -------------------------------------------------------------------- */
     int error;
 
-    error = ee_lndsr_main( metadata, sixs_filename,
+    error = ee_lndsr_main( metadata, sixs_coefs,
                            full_input_size_s, full_input_size_l,
                            input_offset_s, input_offset_l,
                            input_size_s, input_size_l, 6 /* nband */,

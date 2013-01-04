@@ -35,6 +35,8 @@ atmos_t atmos_coef;
  * represents four daily time slices of the variable and thus are
  * (ar_size_s*ar_size_l*4) in size (at 0, 6, 12 and 18 hundred hours).
  *
+ * @param metadata all the required metadata items (too be described)
+ * @param sixs_coefs the 6s coefficients in the form of the SIXS_RUN_RESULTS.TXT file.
  * @param full_input_size_s Landsat scene width in pixels
  * @param full_input_size_l Landsat scene height in lines
  * @param input_offset_s offset to tile to be processed in pixels
@@ -69,7 +71,7 @@ atmos_t atmos_coef;
  */
 int ee_lndsr_main(
     const char *metadata,
-    const char *sixs_filename,
+    const char *sixs_coefs,
 
     int full_input_size_s, int full_input_size_l,
     int input_offset_s, int input_offset_l,
@@ -100,6 +102,8 @@ int ee_lndsr_main(
     TileDef_t tile_def;
     sixs_tables_t sixs_tables;
     short *landsat_band[6];
+    char sixs_filename[L_tmpnam];
+    FILE *sixs_fp;
 
     report_timer( "ee_lndsr_main(): Start" );
 
@@ -217,9 +221,18 @@ int ee_lndsr_main(
 /*      Read 6S from data file.  TODO(warmerdam): allow passing         */
 /*      these coefficients in as arguments.                             */
 /* -------------------------------------------------------------------- */
+    tmpnam(sixs_filename);
+    sixs_fp = fopen(sixs_filename,"w");
+    if (sixs_fp == NULL 
+        || fwrite(sixs_coefs, strlen(sixs_coefs), 1, sixs_fp) != 1) {
+      return 1;
+    }
+    fclose(sixs_fp);
+
     if (read_6S_results_from_file(sixs_filename,&sixs_tables) != 0) {
         return 1;
     }
+    unlink(sixs_filename);
 
     switch (meta.inst) {
       case INST_TM:
