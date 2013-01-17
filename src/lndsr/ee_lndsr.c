@@ -107,6 +107,15 @@ int ee_lndsr_main(
 
     report_timer( "ee_lndsr_main(): Start" );
 
+    printf( "  full_input_size_s=%d, full_input_size_l=%d\n",
+            full_input_size_s, full_input_size_l );
+    printf( "  input_offset_s=%d, input_offset_l=%d, input_size_s=%d, input_size_l=%d\n",
+            input_offset_s, input_offset_l, input_size_s, input_size_l );
+    printf( "  utm_zone=%d, ul_x=%.1f, ul_y=%.1f, pixel_size=%.1f\n",
+            utm_zone, ul_x, ul_y, pixel_size );
+    printf( "  ar_size_s=%d, ar_size_l=%d\n", 
+            ar_size_s, ar_size_l );
+
     landsat_band[0] = band1;
     landsat_band[1] = band2;
     landsat_band[2] = band3;
@@ -414,7 +423,7 @@ int ee_lndsr_main(
     pre_cld_buf = (char *) calloc(tile_def.size.s*lut->ar_region_size.l,1);
     post_cld_buf = (char *) calloc(tile_def.size.s*lut->ar_region_size.l,1);
 
-    cld_region_lines = (char **) malloc(lut->ar_region_size.l*3*sizeof(char*));
+    cld_region_lines = (char **) calloc(lut->ar_region_size.l*3,sizeof(char*));
     ptr_rot_cld[0] = cld_region_lines + 0;
     ptr_rot_cld[1] = cld_region_lines + lut->ar_region_size.l;
     ptr_rot_cld[2] = cld_region_lines + 2*lut->ar_region_size.l;
@@ -739,7 +748,44 @@ int ee_lndsr_main(
             lndsr_QA[il*tile_def.size.s+is] = (short) line_out[nband+1][is];
         }
     }
-	
+
+/* -------------------------------------------------------------------- */
+/*  Cleanup memory.                                                     */
+/* -------------------------------------------------------------------- */
+    free(b6_line[0]); /* b6_line_buf */
+    free(b6_line);
+    free(qa_line[0]); /* qa_line_buf */
+    free(qa_line);
+    free(atemp_line);
+    free(cld_buf);
+    free(pre_cld_buf);
+    free(post_cld_buf);
+    free(cld_region_lines);
+    free(ddv_line);
+    free(mask_line);
+    for (ib = 0; ib < NBAND_SR_MAX; ib++) {
+        free(line_out[ib]);
+    }
+    free(line_ar[0][0]); /* line_ar_buf */
+    free(line_ar[0]); /* line_ar_band_buf */
+    free(line_ar);
+    free(line_in[0][0]); /* line_in_buf */
+    free(line_in[0]); /* line_in_band_buf */
+    free(line_in);
+
+    free(ar_gridcell->lat);
+    free(ar_gridcell->lon);
+    free(ar_gridcell->sun_zen);
+    free(ar_gridcell->view_zen);
+    free(ar_gridcell->rel_az);
+    free(ar_gridcell->wv);
+    free(ar_gridcell->spres);
+    free(ar_gridcell->ozone);
+    free(ar_gridcell->spres_dem);
+    free(ar_gridcell);
+
+    free_mem_atmos_coeff(&atmos_coef);
+
     report_timer( "Main data pass Complete" );
 
     return 0;
@@ -838,7 +884,7 @@ int ***ee_PrepareLineIn( TileDef_t *tile_def, Lut_t *lut ) {
     int *line_in_buf;
     int **line_in_band_buf;
     Img_coord_int_t *size = &(tile_def->size);
-    const int bands = 5;
+    const int bands = 6;
 
     line_in = (int ***)calloc((size_t)size->l, sizeof(int **));
     if (line_in == (int ***)NULL) 

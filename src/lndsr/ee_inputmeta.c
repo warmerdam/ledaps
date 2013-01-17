@@ -79,7 +79,7 @@ bool ee_GetInputMeta(Input_meta_t *meta, const char *metadata)
 {
   double dval[NBAND_REFL_MAX];
   char date[MAX_DATE_LEN + 1];
-  int ib, nband;
+  int ib, nband, i;
   char **keyvals;
   char *string;
   char *error_string = (char *)NULL;
@@ -189,6 +189,12 @@ bool ee_GetInputMeta(Input_meta_t *meta, const char *metadata)
   meta->iband[3] = 4;
   meta->iband[4] = 5;
   meta->iband[5] = 7;
+
+  /* Free parsed results */
+  for( i = 0; keyvals[i] != NULL; i++ ) {
+    free(keyvals[i]);
+  }
+  free(keyvals);
 
   /* Check WRS path/rows */
 
