@@ -111,6 +111,15 @@ bool cloud_detection_pass1(Lut_t *lut, int nsamp, int il, int **line_in, int8 *q
                             is, il, 
                             water, C1, C2, C3, 
                             atemp_line[is] );
+                    printf( "    ndvi=%g, rho4=%g, rho5=%g\n", 
+                            ndvi, rho4, rho5 );
+                    printf( "    line_in=%d, tgOG=%g, rho_ra=%g, tu_ra=%g, td_ra=%g, tgH2O=%g\n",
+                            line_in[0][is], 
+                            interpol_atmos_coef.tgOG[0][0],
+                            interpol_atmos_coef.rho_ra[0][0],
+                            interpol_atmos_coef.tu_ra[0][0],
+                            interpol_atmos_coef.td_ra[0][0],
+                            interpol_atmos_coef.tgH2O[0][0]);
                 }
 
                 if (!water) { /* if not water */
